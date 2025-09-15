@@ -1,24 +1,33 @@
-//
-//  ContentView.swift
-//  LiftOS
-//
-//  Created by Garrett Curtis on 9/13/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+    @State private var showSchedulePopover = false
 
-#Preview {
-    ContentView()
+    var body: some View {
+        TabView {
+            TrainView()
+                .tabItem { Label("Train", systemImage: "dumbbell") }
+
+            MesocyclesView()
+                .tabItem { Label("Mesocycles", systemImage: "rectangle.grid.1x2") }
+
+            ExercisesView()
+                .tabItem { Label("Exercises", systemImage: "books.vertical") }
+
+            MoreView()
+                .tabItem { Label("More", systemImage: "ellipsis.circle") }
+        }
+        .tint(.primary)
+        .glassBackground()
+        // ⬇️ Persistent, compact calendar at the top everywhere
+        .safeAreaInset(edge: .top) {
+            WeekDayRibbon {
+                showSchedulePopover = true
+            }
+        }
+        // Reuse your existing full calendar popover here so all tabs get it
+        .popover(isPresented: $showSchedulePopover, arrowEdge: .top) {
+            GlobalSchedulePopover(onClose: { showSchedulePopover = false })
+        }
+    }
 }
