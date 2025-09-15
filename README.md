@@ -1,6 +1,14 @@
 # 🚀 LiftOS  
 *A native iOS hypertrophy training app designed with Apple’s polish.*  
 
+<p align="center">
+  <img src="https://img.shields.io/badge/iOS-16+-lightgrey?style=for-the-badge&logo=apple&logoColor=white" />
+  <img src="https://img.shields.io/badge/SwiftUI-Framework-orange?style=for-the-badge&logo=swift&logoColor=white" />
+  <img src="https://img.shields.io/badge/watchOS-Compatible-green?style=for-the-badge&logo=applewatch&logoColor=white" />
+  <img src="https://img.shields.io/badge/CloudKit-Enabled-blue?style=for-the-badge&logo=icloud&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" />
+</p>
+
 ---
 
 ## 📱 Overview  
@@ -66,3 +74,21 @@ LiftOS is a hypertrophy training app inspired by **RP Hypertrophy**, but built e
 1. Clone the repo:  
    ```bash
    git clone https://github.com/garrettcurtis92/LiftOS.git
+	2.	Open in Xcode.
+	3.	Select your device (iPhone) as the run target.
+	4.	Make sure you’ve added your Apple ID under Xcode → Settings → Accounts.
+	5.	Hit Run ▶ to sideload to your iPhone.
+
+⸻
+
+📝 License
+
+MIT License. See LICENSE for details.
+
+⸻
+
+🙌 Acknowledgements
+	•	Inspired by RP Hypertrophy.
+	•	Built for family, friends, and coworkers.
+	•	Designed with love for the Apple ecosystem.
+
