@@ -25,6 +25,7 @@ struct PrimaryButton: View {
         .labelStyle(.automatic)
         .buttonStyle(.borderedProminent)   // native + accessible
         .tint(.accentColor)                // system accent; can set AccentColor in Assets later
+        .foregroundStyle(.white)           // Ensure text is always white on colored background
         .controlSize(.large)
         .accessibilityLabel(Text(title))
     }

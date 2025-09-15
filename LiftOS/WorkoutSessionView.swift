@@ -139,11 +139,12 @@ struct WorkoutSessionView: View {
         }
 
         // Summary
-        .sheet(isPresented: $showSummary) {
+        .sheet(item: $lastSummary, onDismiss: {
+            // Advance to next day after summary is dismissed
+            advanceToNextDay()
+        }) { s in
             NavigationStack {
-                if let s = lastSummary {
-                    SessionSummaryView(summary: s)
-                }
+                SessionSummaryView(summary: s)
             }
         }
 
@@ -198,20 +199,73 @@ struct WorkoutSessionView: View {
         let setsFlat = session.exercises.flatMap { ex in
             (completed[ex.id] ?? []).map { CompletedSet(from: $0, exerciseName: ex.name) }
         }
-        var summary = SessionSummary(title: session.title, date: Date(), sets: setsFlat)
 
+        // Compute duration
+        var summary = SessionSummary(title: session.title, date: Date(), sets: setsFlat)
         if let start = sessionStart {
             summary.durationSeconds = max(1, Int(Date().timeIntervalSince(start)))
         }
 
-        SummaryStore.shared.load()
-        SummaryStore.shared.save(summary)
-        lastSummary = summary
-        showSummary = true
+        // ---- PR & volume calc (by exerciseName)
+        var perExerciseVolume: [String: Double] = [:]
+        var perExerciseTopSet: [String: Double] = [:]
 
-        // Auto-advance Day (wrap)
+        for s in setsFlat {
+            guard let w = s.weight, let r = s.reps else { continue }
+            perExerciseVolume[s.exerciseName, default: 0] += (w * Double(r))
+            perExerciseTopSet[s.exerciseName] = max(perExerciseTopSet[s.exerciseName] ?? 0, w)
+        }
+
+        // Update PRs
+        let store = PRStore.shared
+        store.load()
+        var prFlags: [String: (top: Bool, vol: Bool)] = [:]
+        for (name, vol) in perExerciseVolume {
+            let top = perExerciseTopSet[name]
+            let flags = store.updatePR(exerciseName: name, topSetLoad: top, volume: vol)
+            prFlags[name] = (flags.newTopPR, flags.newVolumePR)
+        }
+        store.save()
+
+        // Stash in summary userInfo (non-breaking way to pass to the summary view)
+        summary.userInfo = [
+            "duration": summary.durationSeconds ?? 0,
+            "perExerciseVolume": perExerciseVolume,
+            "perExerciseTopSet": perExerciseTopSet,
+            "prFlags": prFlags.mapValues { ["top": $0.top, "vol": $0.vol] }
+        ]
+
+    // Set summary directly without saving/loading to avoid encoding issues
+    lastSummary = summary
+        
+        // Don't save immediately to avoid encoding issues - save after summary is dismissed
+        // SummaryStore.shared.load()
+        // SummaryStore.shared.save(summary)
+
+        // Note: Day advancement is now handled when summary is dismissed
+    }
+
+    private func advanceToNextDay() {
+        // Save the summary now that the sheet is dismissed
+        if let summary = lastSummary {
+            SummaryStore.shared.load()
+            SummaryStore.shared.save(summary)
+        }
+        
+        // Advance to next day
         let next = currentDayIx + 1
-        currentDayIx = next >= daysPerWeek ? 0 : next
+        if next >= daysPerWeek {
+            currentWeek += 1
+            currentDayIx = 0
+        } else {
+            currentDayIx = next
+        }
+        
+        // Reset session state
+        completed = [:]
+        showSummary = false
+        lastSummary = nil
+        sessionStart = nil
     }
 
     // MARK: - Exercise Set Handlers
@@ -472,17 +526,16 @@ private struct InlineSetRow: View {
         }
         .padding(.vertical, 8)
         .contentShape(Rectangle())
-        .onSubmit { handleSubmit() }
-        .onChange(of: repsText) { commitSoft() }
-        .onChange(of: previousWeight) { newPreviousWeight in
+    .onSubmit { handleSubmit() }
+        .onChange(of: previousWeight) { 
             // Update weight field if it's empty and we have a new previous weight
-            if weightText.isEmpty, let newWeight = newPreviousWeight {
+            if weightText.isEmpty, let newWeight = previousWeight {
                 weightText = String(Int(newWeight))
             }
         }
-        .onChange(of: focusedField.wrappedValue) { newFocus in
+        .onChange(of: focusedField.wrappedValue) { 
             let thisWeightField = SessionField.weight(exerciseID, index)
-            let isNowFocused = newFocus == thisWeightField
+            let isNowFocused = focusedField.wrappedValue == thisWeightField
             
             // If this weight field just lost focus and has content, commit immediately
             if wasWeightFocused && !isNowFocused && !weightText.isEmpty {
