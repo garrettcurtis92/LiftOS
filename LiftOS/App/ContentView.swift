@@ -19,13 +19,11 @@ struct ContentView: View {
         }
         .tint(.primary)
         .glassBackground()
-        // ⬇️ Persistent, compact calendar at the top everywhere
         .safeAreaInset(edge: .top) {
             WeekDayRibbon {
                 showSchedulePopover = true
             }
         }
-        // Reuse your existing full calendar popover here so all tabs get it
         .popover(isPresented: $showSchedulePopover, arrowEdge: .top) {
             GlobalSchedulePopover(onClose: { showSchedulePopover = false })
         }

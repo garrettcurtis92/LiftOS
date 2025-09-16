@@ -29,22 +29,9 @@
 		79569D252E766471004EE822 /* LiftOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LiftOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		79569D7E2E768C6B004EE822 /* Exceptions for "LiftOS" folder in "LiftOS" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Untitled.swift,
-			);
-			target = 79569D0D2E76646F004EE822 /* LiftOS */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		79569D102E76646F004EE822 /* LiftOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				79569D7E2E768C6B004EE822 /* Exceptions for "LiftOS" folder in "LiftOS" target */,
-			);
 			path = LiftOS;
 			sourceTree = "<group>";
 		};
@@ -184,7 +171,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					79569D0D2E76646F004EE822 = {
 						CreatedOnToolsVersion = 16.4;
@@ -340,6 +327,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -396,6 +384,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};

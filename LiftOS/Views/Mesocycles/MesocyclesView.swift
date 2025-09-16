@@ -1,9 +1,4 @@
-//
-//  MesocyclesView.swift
-//  LiftOS
-//
-//  Created by Garrett Curtis on 9/13/25.
-//
+// Mesocycles feature root
 import SwiftUI
 
 struct MesocyclesView: View {
@@ -12,15 +7,11 @@ struct MesocyclesView: View {
             List {
                 Section("Current") {
                     NavigationLink {
-                        Text("Mesocycle Detail (W1–W6)")
-                            .padding()
+                        Text("Mesocycle Detail (W1–W6)").padding()
                     } label: {
                         VStack(alignment: .leading) {
-                            Text("Push/Pull/Legs (5+1 Deload)")
-                                .font(.headline)
-                            Text("Week 1 • 3 RIR • 5 days/wk")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                            Text("Push/Pull/Legs (5+1 Deload)").font(.headline)
+                            Text("Week 1 • 3 RIR • 5 days/wk").font(.subheadline).foregroundStyle(.secondary)
                         }
                     }
                 }
