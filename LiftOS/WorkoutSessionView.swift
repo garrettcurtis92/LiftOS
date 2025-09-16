@@ -5,11 +5,6 @@
 
 import SwiftUI
 
-fileprivate enum SessionField: Hashable {
-    case weight(UUID, Int) // (exerciseID, setIndex)
-    case reps(UUID, Int)
-}
-
 // MARK: - Helpers (local types)
 
 private struct PresentedExerciseSet: Identifiable {
@@ -33,120 +28,10 @@ struct WorkoutSessionView: View {
     @State private var showRestTimer = false
     @State private var lastRestDuration: Int = 90  // seconds, default for inline flow
     @State private var completed: [UUID: [ExerciseSet]] = [:] // exercise.id -> sets
-    @State private var showSummary = false
     @State private var lastSummary: SessionSummary?
     @State private var sessionStart: Date? = nil
 
-    // App storage / prefs
-    @AppStorage("currentWeek")    private var currentWeek: Int = 1
-    @AppStorage("currentDayIx")   private var currentDayIx: Int = 0
-    @AppStorage("daysPerWeek")    private var daysPerWeek: Int = 3
-    @AppStorage("weightUnit")     private var weightUnit: WeightUnit = .lb
-
-    // Progress
-    private var plannedSetCount: Int {
-        session.exercises.reduce(0) { $0 + $1.targetSets }
-    }
-    private var completedUniqueCount: Int {
-        session.exercises.reduce(0) { acc, ex in
-            let arr = completed[ex.id] ?? []
-            let unique = Set(arr.map { $0.index })
-            return acc + unique.count
-        }
-    }
-    private var allSetsDone: Bool {
-        plannedSetCount > 0 && completedUniqueCount >= plannedSetCount
-    }
-
-    // Init builds demo session from preset (Push/Pull/Legs/Accessory)
-    init(dayLabel: String? = nil, preset: String? = nil) {
-        self.dayLabel = dayLabel
-
-        let (title, exercises): (String, [ExerciseItem])
-        switch preset {
-        case "Pull":
-            (title, exercises) = (
-                "Pull Day",
-                [
-                    ExerciseItem(name: "Lat Pulldown",        targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Seated Row",          targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Face Pull",           targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Hammer Curl",         targetSets: 3, rirTarget: 3)
-                ]
-            )
-        case "Legs":
-            (title, exercises) = (
-                "Legs Day",
-                [
-                    ExerciseItem(name: "Back Squat",          targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Romanian Deadlift",   targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Leg Press",           targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Calf Raise",          targetSets: 3, rirTarget: 3)
-                ]
-            )
-        case "Push":
-            fallthrough
-        default:
-            (title, exercises) = (
-                "Push Day",
-                [
-                    ExerciseItem(name: "Incline DB Press",    targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Cable Fly",           targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Lateral Raise",       targetSets: 3, rirTarget: 3),
-                    ExerciseItem(name: "Triceps Pressdown",   targetSets: 3, rirTarget: 3)
-                ]
-            )
-        }
-
-        _session = State(initialValue: WorkoutSession(title: title, exercises: exercises))
-    }
-    // MARK: - Body
-
-    var body: some View {
-        List {
-            Section {
-                Text("RIR Target: \(session.exercises.first?.rirTarget ?? 3)")
-                    .font(TypeScale.subheadline())
-                    .foregroundStyle(DS.colors.secondaryLabel)
-            }
-
-            ForEach(session.exercises) { exercise in
-                ExerciseSetsSection(
-                    exercise: exercise,
-                    existingSets: completed[exercise.id] ?? [],
-                    weightUnit: weightUnit,
-                    onAddSet: { handleAddSet(for: exercise) },
-                    onSkipSet: { idx in handleSkipSet(for: exercise, index: idx) },
-                    onDeleteSet: { idx in handleDeleteSet(for: exercise, index: idx) },
-                    onCommitInline: { idx, weight, reps, checked in
-                        handleCommitInline(for: exercise, index: idx, weight: weight, reps: reps, checked: checked)
-                    },
-                    focusedField: $focusedField
-                )
-            }
-        }
-        .navigationTitle(dayLabel.map { "\(session.title) — \($0)" } ?? session.title)
-
-        // Rest timer
-        .fullScreenCover(isPresented: $showRestTimer) {
-            RestTimerView(
-                seconds: lastRestDuration,
-                onDone: {
-                    Haptics.success()
-                    showRestTimer = false
-                }
-            )
-        }
-
-        // Summary
-        .sheet(item: $lastSummary, onDismiss: {
-            // Advance to next day after summary is dismissed
-            advanceToNextDay()
-        }) { s in
-            NavigationStack {
-                SessionSummaryView(summary: s)
-            }
-        }
+    // Extracted subviews moved to Views/WorkoutSessionView/
 
         // Bottom finish bar (only when all sets done)
         .safeAreaInset(edge: .bottom) {
@@ -206,37 +91,10 @@ struct WorkoutSessionView: View {
             summary.durationSeconds = max(1, Int(Date().timeIntervalSince(start)))
         }
 
-        // ---- PR & volume calc (by exerciseName)
-        var perExerciseVolume: [String: Double] = [:]
-        var perExerciseTopSet: [String: Double] = [:]
-
-        for s in setsFlat {
-            guard let w = s.weight, let r = s.reps else { continue }
-            perExerciseVolume[s.exerciseName, default: 0] += (w * Double(r))
-            perExerciseTopSet[s.exerciseName] = max(perExerciseTopSet[s.exerciseName] ?? 0, w)
-        }
-
-        // Update PRs
-        let store = PRStore.shared
-        store.load()
-        var prFlags: [String: (top: Bool, vol: Bool)] = [:]
-        for (name, vol) in perExerciseVolume {
-            let top = perExerciseTopSet[name]
-            let flags = store.updatePR(exerciseName: name, topSetLoad: top, volume: vol)
-            prFlags[name] = (flags.newTopPR, flags.newVolumePR)
-        }
-        store.save()
-
-        // Stash in summary userInfo (non-breaking way to pass to the summary view)
-        summary.userInfo = [
-            "duration": summary.durationSeconds ?? 0,
-            "perExerciseVolume": perExerciseVolume,
-            "perExerciseTopSet": perExerciseTopSet,
-            "prFlags": prFlags.mapValues { ["top": $0.top, "vol": $0.vol] }
-        ]
-
-    // Set summary directly without saving/loading to avoid encoding issues
-    lastSummary = summary
+    // Build summary + derived data via service
+    let built = SummaryBuilder.build(title: session.title, date: Date(), sets: setsFlat, sessionStart: sessionStart)
+    // Set summary directly to drive the sheet(item:)
+    lastSummary = built.summary
         
         // Don't save immediately to avoid encoding issues - save after summary is dismissed
         // SummaryStore.shared.load()
@@ -263,7 +121,6 @@ struct WorkoutSessionView: View {
         
         // Reset session state
         completed = [:]
-        showSummary = false
         lastSummary = nil
         sessionStart = nil
     }
