@@ -15,7 +15,7 @@ struct SetEntryView: View { /* moved under WorkoutSessionView feature in case us
     var body: some View {
         NavigationStack {
             Form {
-                Section { Text(exerciseName).font(TypeScale.title()); Text("RIR \(rirTarget)").font(TypeScale.subheadline()).foregroundStyle(DS.colors.secondaryLabel) }
+                Section { Text(exerciseName).font(TypeScale.title()) }
                 Section("Entry") { TextField("Weight (\(weightUnit.display))", text: $weightText).keyboardType(.decimalPad); TextField("Reps (target RIR \(rirTarget))", text: $repsText).keyboardType(.numberPad); TextField("RIR (0–4)", text: $rirText).keyboardType(.numberPad) }
                 Section("Rest Timer") { VStack(alignment: .leading, spacing: 8) { Text("\(Int(restSeconds)) seconds").font(TypeScale.headline()); Slider(value: $restSeconds, in: 45...180, step: 15) } }
             }

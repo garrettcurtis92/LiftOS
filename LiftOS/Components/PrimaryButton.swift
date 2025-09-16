@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PrimaryButton: View {
+    @Environment(\.colorScheme) private var scheme
     var title: String
     var systemIcon: String? = nil
     var action: () -> Void
@@ -12,7 +13,7 @@ struct PrimaryButton: View {
         .labelStyle(.automatic)
         .buttonStyle(.borderedProminent)
         .tint(.accentColor)
-        .foregroundStyle(.white)
+    .foregroundStyle(scheme == .dark ? Color.black : Color.white)
         .controlSize(.large)
         .accessibilityLabel(Text(title))
     }

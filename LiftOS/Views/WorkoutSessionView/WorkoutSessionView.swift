@@ -36,14 +36,7 @@ struct WorkoutSessionView: View {
     }
 
     var body: some View {
-        List {
-            // Session options
-            Section {
-                Toggle(isOn: $restTimerEnabled) {
-                    Label("Rest Timer", systemImage: restTimerEnabled ? "timer" : "timer.square")
-                }
-            }
-            
+    List {
             ForEach(session.exercises) { ex in
                 ExerciseSetsSection(
                     exercise: ex,
@@ -92,6 +85,7 @@ struct WorkoutSessionView: View {
             for i in session.exercises.indices { session.exercises[i].rirTarget = target }
         }
         .toolbar {
+            // Keyboard toolbar
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") { focusedField = nil }
@@ -102,13 +96,38 @@ struct WorkoutSessionView: View {
     .sheet(item: $lastSummary, onDismiss: { advanceToNextDay() }) { s in
             NavigationStack { SessionSummaryView(summary: s) }
         }
-        .sheet(isPresented: $showRestTimer) {
+        . sheet(isPresented: $showRestTimer) {
             RestTimerView(seconds: lastRestDuration) {
                 showRestTimer = false
             }
         }
         .onChange(of: restTimerEnabled) { enabled in
             if !enabled { showRestTimer = false }
+        }
+        // Floating timer toggle button (bottom-right), stays out of the main flow
+        .overlay(alignment: .bottomTrailing) {
+            VStack {
+                Button {
+                    restTimerEnabled.toggle()
+                    Haptics.tap()
+                    if !restTimerEnabled { showRestTimer = false }
+                } label: {
+                    Image(systemName: restTimerEnabled ? "timer" : "timer.slash")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .padding(12)
+                        .background(
+                            Circle().fill(.regularMaterial)
+                        )
+                        .overlay(
+                            Circle().strokeBorder(Color.primary.opacity(restTimerEnabled ? 0.12 : 0.28), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.18), radius: 6, y: 2)
+                }
+                .accessibilityLabel(restTimerEnabled ? "Disable rest timer" : "Enable rest timer")
+                .padding(.trailing, DS.Space.lg.rawValue)
+                .padding(.bottom, allSetsDone ? DS.Space.xxl.rawValue : DS.Space.lg.rawValue)
+            }
         }
     }
 
