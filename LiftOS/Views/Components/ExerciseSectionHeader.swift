@@ -33,6 +33,11 @@ extension View {
     func exerciseHeader(_ primary: String, _ secondary: String? = nil) -> some View { self
         .modifier(_ExerciseHeaderModifier(primary: primary, secondary: secondary))
     }
+
+    /// Header helper that also shows a trailing completed/target counter
+    func exerciseHeader(_ primary: String, _ secondary: String? = nil, doneCount: Int, targetSets: Int) -> some View { self
+        .modifier(_ExerciseHeaderWithCountModifier(primary: primary, secondary: secondary, doneCount: doneCount, targetSets: targetSets))
+    }
 }
 
 private struct _ExerciseHeaderModifier: ViewModifier {
@@ -43,6 +48,30 @@ private struct _ExerciseHeaderModifier: ViewModifier {
             content
         } header: {
             ExerciseSectionHeader(primary: primary, secondary: secondary)
+        }
+    }
+}
+
+private struct _ExerciseHeaderWithCountModifier: ViewModifier {
+    let primary: String
+    let secondary: String?
+    let doneCount: Int
+    let targetSets: Int
+    func body(content: Content) -> some View {
+        Section {
+            content
+        } header: {
+            VStack(alignment: .leading, spacing: 4) {
+                ExerciseSectionHeader(primary: primary, secondary: secondary)
+                HStack {
+                    Spacer()
+                    Text("\(doneCount)/\(targetSets)")
+                        .font(TypeScale.footnote())
+                        .foregroundStyle(DS.colors.secondaryLabel)
+                        .monospaced()
+                        .accessibilityLabel("Completed \(doneCount) of \(targetSets) sets")
+                }
+            }
         }
     }
 }

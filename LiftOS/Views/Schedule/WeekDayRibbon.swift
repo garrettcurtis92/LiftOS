@@ -1,46 +1,54 @@
-// Compact schedule ribbon used at top
 import SwiftUI
 
+/// Small, tappable ribbon that shows current Week/Day. Used **only** in WorkoutSessionView.
 struct WeekDayRibbon: View {
-    @Environment(\.colorScheme) private var scheme
-    @AppStorage("scheduleMode")  private var scheduleMode: ScheduleMode = .fixedWeekdays
-    @AppStorage("daysPerWeek")   private var daysPerWeek: Int = 3
-    @AppStorage("currentWeek")   private var currentWeek: Int = 1
-    @AppStorage("currentDayIx")  private var currentDayIx: Int = 0
-
     var onTap: () -> Void
 
-    private var dayLabel: String { visibleDays(mode: scheduleMode, daysPerWeek: daysPerWeek)[currentDayIx] }
-    private var weekLabel: String { currentWeek == 6 ? "DL" : "W\(currentWeek)" }
+    @AppStorage("currentWeek") private var currentWeek: Int = 1
+    @AppStorage("currentDayIx") private var currentDayIx: Int = 0
+    @AppStorage("daysPerWeek") private var daysPerWeek: Int = 3
+
+    private var dayLabel: String {
+        let weekdays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+        if daysPerWeek <= 7, currentDayIx < weekdays.count {
+            return weekdays[currentDayIx]
+        } else {
+            return "Day \(currentDayIx + 1)"
+        }
+    }
 
     var body: some View {
-        HStack(spacing: DS.Space.md.rawValue) {
+        HStack(spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "calendar.badge.clock").imageScale(.medium)
-                Text(weekLabel).font(TypeScale.subheadline(.semibold))
+                Image(systemName: "calendar")
+                Text("W\(currentWeek)")
+                    .monospacedDigit()
             }
-            .foregroundStyle(.primary)
-            .padding(.vertical, 6).padding(.horizontal, 10)
-            .background(.regularMaterial, in: Capsule())
-            .overlay(Capsule().strokeBorder((scheme == .dark ? Color.white.opacity(0.10) : Color.black.opacity(0.15)), lineWidth: 1))
-            .shadow(color: Color.black.opacity(scheme == .dark ? 0.18 : 0.06), radius: 5, y: 2)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.thinMaterial, in: Capsule(style: .continuous))
 
             HStack(spacing: 6) {
-                Image(systemName: "bolt.fill").imageScale(.medium)
-                Text(dayLabel).font(TypeScale.subheadline(.semibold))
+                Image(systemName: "bolt.fill")
+                Text(dayLabel)
             }
-            .foregroundStyle(.primary)
-            .padding(.vertical, 6).padding(.horizontal, 10)
-            .background(.regularMaterial, in: Capsule())
-            .overlay(Capsule().strokeBorder((scheme == .dark ? Color.white.opacity(0.10) : Color.black.opacity(0.15)), lineWidth: 1))
-            .shadow(color: Color.black.opacity(scheme == .dark ? 0.18 : 0.06), radius: 5, y: 2)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.thinMaterial, in: Capsule(style: .continuous))
+
             Spacer()
-            Image(systemName: "chevron.down").font(.footnote).foregroundStyle(.secondary)
+            Image(systemName: "chevron.down")
+                .foregroundStyle(.secondary)
         }
+        .font(.footnote.weight(.semibold))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(
+            Color.clear
+                .background(.ultraThinMaterial)
+                .opacity(0.0001) // keep taps easy without visible background
+        )
         .contentShape(Rectangle())
-        .onTapGesture { Haptics.tap(); onTap() }
-        .padding(.horizontal, DS.Space.lg.rawValue)
-        .padding(.vertical, 6)
-        .background(.ultraThinMaterial)
+        .onTapGesture { onTap() }
     }
 }

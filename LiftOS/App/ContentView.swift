@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var showSchedulePopover = false
-
     var body: some View {
         TabView {
             TrainView()
@@ -19,13 +17,5 @@ struct ContentView: View {
         }
         .tint(.primary)
         .glassBackground()
-        .safeAreaInset(edge: .top) {
-            WeekDayRibbon {
-                showSchedulePopover = true
-            }
-        }
-        .popover(isPresented: $showSchedulePopover, arrowEdge: .top) {
-            GlobalSchedulePopover(onClose: { showSchedulePopover = false })
-        }
     }
 }

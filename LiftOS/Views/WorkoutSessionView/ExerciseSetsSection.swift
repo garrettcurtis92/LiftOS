@@ -50,15 +50,18 @@ struct ExerciseSetsSection: View {
                 row(for: idx)
             }
         } header: {
-            HStack {
-                Text(exercise.name)
-                Spacer()
-                Text("\(doneCount)/\(exercise.targetSets)")
-                    .font(TypeScale.footnote())
-                    .foregroundStyle(DS.colors.secondaryLabel)
-                    .monospaced()
-                    .accessibilityLabel("Completed \(doneCount) of \(exercise.targetSets) sets")
+            VStack(alignment: .leading, spacing: 4) {
+                ExerciseSectionHeader(primary: exercise.name, secondary: nil)
+                HStack {
+                    Spacer()
+                    Text("\(doneCount)/\(exercise.targetSets)")
+                        .font(TypeScale.footnote())
+                        .foregroundStyle(DS.colors.secondaryLabel)
+                        .monospaced()
+                        .accessibilityLabel("Completed \(doneCount) of \(exercise.targetSets) sets")
+                }
             }
         }
+        .listRowBackground(Color.clear)
     }
 }

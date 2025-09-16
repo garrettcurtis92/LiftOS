@@ -7,7 +7,6 @@ struct MoreView: View {
             List {
                 Section("Account") { Text("iCloud Status"); Text("Health Permissions") }
                 Section("App") { NavigationLink("Settings") { SettingsView() }; Text("Appearance"); Text("Haptics & Sounds"); Text("About") }
-                Section("Developer") { Text("Debug Sync"); Text("Reset Local Cache") }
             }
             .navigationTitle("More")
         }

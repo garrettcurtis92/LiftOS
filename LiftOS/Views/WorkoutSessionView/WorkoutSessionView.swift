@@ -85,7 +85,7 @@ struct WorkoutSessionView: View {
             for i in session.exercises.indices { session.exercises[i].rirTarget = target }
         }
         .toolbar {
-            // Keyboard toolbar
+            // Keyboard accessory Done button
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") { focusedField = nil }
@@ -101,6 +101,7 @@ struct WorkoutSessionView: View {
                 showRestTimer = false
             }
         }
+        
         .onChange(of: restTimerEnabled) { enabled in
             if !enabled { showRestTimer = false }
         }

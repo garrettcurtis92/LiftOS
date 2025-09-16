@@ -9,7 +9,6 @@ struct ExercisesView: View {
                 Section("Back") { Text("Lat Pulldown"); Text("Seated Cable Row"); Text("Deadlift") }
             }
             .navigationTitle("Exercises")
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { Haptics.tap() } label: { Image(systemName: "plus") } .accessibilityLabel("Add Exercise") } }
         }
     }
 }

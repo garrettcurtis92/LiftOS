@@ -7,8 +7,7 @@ struct TrainView: View {
     @AppStorage("currentDayIx")  private var currentDayIx: Int = 0
 
     @State private var showSchedulePopover = false
-    @State private var pendingSelection: (week: Int, dayIx: Int)? = nil
-    @State private var showWeekSwitchAlert = false
+    // Selection and alert handled inside GlobalSchedulePopover now
 
     private func dayLabel(ix: Int) -> String { visibleDays(mode: scheduleMode, daysPerWeek: daysPerWeek)[ix] }
     private func plannedPresetForSelectedDay(ix: Int) -> String {
@@ -27,30 +26,8 @@ struct TrainView: View {
                     }
                 }
                 .popover(isPresented: $showSchedulePopover, arrowEdge: .top) {
-                    VStack(alignment: .leading, spacing: DS.Space.md.rawValue) {
-                        Text("Schedule").font(TypeScale.title()).padding(.horizontal, DS.Space.lg.rawValue).padding(.top, DS.Space.lg.rawValue)
-                        WeekDayHeader(
-                            currentWeek: $currentWeek,
-                            currentDayIx: $currentDayIx,
-                            days: visibleDays(mode: scheduleMode, daysPerWeek: daysPerWeek),
-                            mode: scheduleMode,
-                            onSelectDay: { week, dayIx in
-                                if week == currentWeek { currentDayIx = dayIx; showSchedulePopover = false }
-                                else { pendingSelection = (week, dayIx); showWeekSwitchAlert = true }
-                            }
-                        )
-                        HStack { Spacer(); PrimaryButton(title: "Done", systemIcon: "checkmark.circle.fill") { showSchedulePopover = false } .padding(.horizontal, DS.Space.lg.rawValue).padding(.bottom, DS.Space.lg.rawValue) }
-                    }
-                    .presentationDetents([.medium])
+                    GlobalSchedulePopover(onClose: { showSchedulePopover = false })
                 }
-                .alert("Switch to Week \(pendingSelection?.week ?? 1)?", isPresented: $showWeekSwitchAlert) {
-                    Button("Cancel", role: .cancel) { pendingSelection = nil }
-                    Button("Switch") {
-                        if let p = pendingSelection { currentWeek = p.week; currentDayIx = p.dayIx }
-                        pendingSelection = nil
-                        showSchedulePopover = false
-                    }
-                } message: { Text("Auto-regulated targets apply only to the current week. You can always change back in Settings.") }
         }
     }
 }
