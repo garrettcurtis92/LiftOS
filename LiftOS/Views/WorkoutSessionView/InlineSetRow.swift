@@ -1,3 +1,4 @@
+
 import SwiftUI
 
 struct InlineSetRow: View {
@@ -97,20 +98,9 @@ struct InlineSetRow: View {
                 .submitLabel(index < totalSets ? .next : .done)
                 .frame(maxWidth: .infinity)
 
-            Button {
-                if weightText.trimmingCharacters(in: .whitespaces).isEmpty &&
-                   repsText.trimmingCharacters(in: .whitespaces).isEmpty {
-                    checked = true
-                    onCommit(nil, nil, true)
-                } else {
-                    checked.toggle()
-                    commit()
-                }
-            } label: {
-                Image(systemName: checked ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(checked ? Color.accentColor : Color.secondary)
+            CheckChip(isOn: $checked) {
+                commit()
             }
-            .buttonStyle(.plain)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.vertical, 8)

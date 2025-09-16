@@ -15,6 +15,7 @@ struct WorkoutSessionView: View {
     @AppStorage("daysPerWeek") private var daysPerWeek: Int = 3
     @AppStorage("currentWeek") private var currentWeek: Int = 1
     @AppStorage("currentDayIx") private var currentDayIx: Int = 0
+    @AppStorage("restTimerEnabled") private var restTimerEnabled: Bool = true
 
     // Session state
     @State private var session: WorkoutSession
@@ -26,6 +27,7 @@ struct WorkoutSessionView: View {
     @State private var completed: [UUID: [ExerciseSet]] = [:] // exercise.id -> sets
     @State private var lastSummary: SessionSummary?
     @State private var sessionStart: Date? = nil
+    //
 
     init(dayLabel: String? = nil, preset: String) {
         self.dayLabel = dayLabel
@@ -35,6 +37,13 @@ struct WorkoutSessionView: View {
 
     var body: some View {
         List {
+            // Session options
+            Section {
+                Toggle(isOn: $restTimerEnabled) {
+                    Label("Rest Timer", systemImage: restTimerEnabled ? "timer" : "timer.square")
+                }
+            }
+            
             ForEach(session.exercises) { ex in
                 ExerciseSetsSection(
                     exercise: ex,
@@ -48,25 +57,35 @@ struct WorkoutSessionView: View {
                 )
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(WorkoutBackground())
         .listStyle(.insetGrouped)
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         // Bottom finish bar (only when all sets done)
         .safeAreaInset(edge: .bottom) {
-            if allSetsDone {
-                VStack(spacing: 0) {
-                    Divider()
-                    PrimaryButton(title: "Finish Session", systemIcon: "checkmark.circle.fill") {
-                        Haptics.success()
-                        finishSession()
+            if allSetsDone && !showRestTimer {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 0) {
+                        PrimaryButton(title: "Finish Session", systemIcon: "checkmark.circle.fill") {
+                            Haptics.success()
+                            finishSession()
+                        }
+                        .padding(.horizontal, DS.Space.lg.rawValue)
+                        .padding(.vertical, DS.Space.md.rawValue)
                     }
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .shadow(radius: 8, y: 2)
                     .padding(.horizontal, DS.Space.lg.rawValue)
-                    .padding(.vertical, DS.Space.md.rawValue)
+                    .padding(.bottom, DS.Space.xl.rawValue)
+                    Spacer()
                 }
-                .background(.bar)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.snappy, value: allSetsDone)
             }
         }
-        .padding(.bottom, allSetsDone ? DS.Space.xl.rawValue : 0)
+    .padding(.bottom, (allSetsDone && !showRestTimer) ? DS.Space.lg.rawValue : 0)
         // Apply week-based RIR on appear
         .onAppear {
             let target = MesocycleRules.rirTarget(forWeek: currentWeek)
@@ -78,13 +97,18 @@ struct WorkoutSessionView: View {
                 Button("Done") { focusedField = nil }
             }
         }
-        .sheet(item: $lastSummary, onDismiss: { advanceToNextDay() }) { s in
+        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+    .sheet(item: $lastSummary, onDismiss: { advanceToNextDay() }) { s in
             NavigationStack { SessionSummaryView(summary: s) }
         }
         .sheet(isPresented: $showRestTimer) {
             RestTimerView(seconds: lastRestDuration) {
                 showRestTimer = false
             }
+        }
+        .onChange(of: restTimerEnabled) { enabled in
+            if !enabled { showRestTimer = false }
         }
     }
 
@@ -109,13 +133,10 @@ struct WorkoutSessionView: View {
         }
         let built = SummaryBuilder.build(title: session.title, date: Date(), sets: setsFlat, sessionStart: sessionStart)
         lastSummary = built.summary
+        Haptics.success()
     }
 
     private func advanceToNextDay() {
-        if let summary = lastSummary {
-            SummaryStore.shared.load()
-            SummaryStore.shared.save(summary)
-        }
         let next = currentDayIx + 1
         if next >= daysPerWeek { currentWeek += 1; currentDayIx = 0 } else { currentDayIx = next }
         completed = [:]
@@ -157,7 +178,10 @@ struct WorkoutSessionView: View {
         let newSet = ExerciseSet(index: index, weight: weight, reps: reps, rir: nil, done: checked)
         if let pos = arr.firstIndex(where: { $0.index == index }) { arr[pos] = newSet } else { arr.append(newSet) }
         completed[exID] = arr
-        if checked { showRestTimer = true; lastRestDuration = 90 }
+        if checked && restTimerEnabled {
+            showRestTimer = true
+            lastRestDuration = 90
+        }
     }
 
     // MARK: - Session factory
@@ -170,5 +194,18 @@ struct WorkoutSessionView: View {
         default: ex = [ ExerciseItem(name: "DB Curl", targetSets: 3, rirTarget: 3), ExerciseItem(name: "Triceps Pushdown", targetSets: 3, rirTarget: 3) ]
         }
         return WorkoutSession(title: title, exercises: ex)
+    }
+}
+
+struct WorkoutBackground: View {
+    @Environment(\.colorScheme) private var scheme
+    var body: some View {
+        LinearGradient(
+            colors: scheme == .dark
+                ? [Color.black, Color(white: 0.08)]
+                : [Color(white: 0.98), Color(white: 0.94)],
+            startPoint: .top, endPoint: .bottom
+        )
+        .ignoresSafeArea()
     }
 }
