@@ -29,6 +29,14 @@ struct WorkoutSessionView: View {
     @State private var sessionStart: Date? = nil
     //
 
+    // Helper to show a full weekday name from currentDayIx (0-based)
+    private func weekdayName(for ix: Int) -> String {
+        // Start Monday as index 0
+        let names = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+        guard ix >= 0 && ix < names.count else { return "Day \(ix + 1)" }
+        return names[ix]
+    }
+
     init(dayLabel: String? = nil, preset: String) {
         self.dayLabel = dayLabel
         self.preset = preset
@@ -53,8 +61,7 @@ struct WorkoutSessionView: View {
         .scrollContentBackground(.hidden)
         .background(WorkoutBackground())
         .listStyle(.insetGrouped)
-        .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
+    .navigationBarTitleDisplayMode(.inline)
         // Bottom finish bar (only when all sets done)
         .safeAreaInset(edge: .bottom) {
             if allSetsDone && !showRestTimer {
@@ -85,6 +92,22 @@ struct WorkoutSessionView: View {
             for i in session.exercises.indices { session.exercises[i].rirTarget = target }
         }
         .toolbar {
+            // Two-line centered title with full weekday
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 2) {
+                    Text(mesocycleName)
+                        .font(.headline)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    Text("Week \(currentWeek) day \(currentDayIx + 1) \(weekdayName(for: currentDayIx))")
+                        .font(TypeScale.subheadline())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                .frame(maxWidth: .infinity)
+            }
             // Keyboard accessory Done button
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -133,9 +156,9 @@ struct WorkoutSessionView: View {
     }
 
     // MARK: - Derived
-    private var navigationTitle: String {
-        if let d = dayLabel { return "\(preset) · \(d)" }
-        return preset
+    private var mesocycleName: String {
+        // If we add naming later, pull from ActiveMesocycleStore; for now use a friendly placeholder.
+        return "Active Mesocycle"
     }
     private var allSetsDone: Bool {
         // All exercises have their target set indices present in completed map
