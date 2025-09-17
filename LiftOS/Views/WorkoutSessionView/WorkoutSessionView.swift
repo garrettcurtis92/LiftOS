@@ -45,6 +45,17 @@ struct WorkoutSessionView: View {
 
     var body: some View {
     List {
+            // Train header to match other views
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Train")
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(.primary)
+            }
+            .padding(.horizontal, DS.Space.lg.rawValue)
+            .padding(.top, DS.Space.lg.rawValue)
+            .listRowInsets(.init())
+            .listRowBackground(Color.clear)
+            
             ForEach(session.exercises) { ex in
                 ExerciseSetsSection(
                     exercise: ex,
@@ -68,7 +79,7 @@ struct WorkoutSessionView: View {
                 HStack {
                     Spacer()
                     VStack(spacing: 0) {
-                        PrimaryButton(title: "Finish Session", systemIcon: "checkmark.circle.fill") {
+                        PrimaryButton(title: "Finish Session", systemIcon: "checkmark.circle.fill", style: .success) {
                             Haptics.success()
                             finishSession()
                         }

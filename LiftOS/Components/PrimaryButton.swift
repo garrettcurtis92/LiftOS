@@ -4,6 +4,7 @@ struct PrimaryButton: View {
     @Environment(\.colorScheme) private var scheme
     var title: String
     var systemIcon: String? = nil
+    var style: PrimaryButtonStyle = .primary
     var action: () -> Void
 
     var body: some View {
@@ -12,9 +13,24 @@ struct PrimaryButton: View {
         }
         .labelStyle(.automatic)
         .buttonStyle(.borderedProminent)
-        .tint(.accentColor)
-    .foregroundStyle(scheme == .dark ? Color.black : Color.white)
+        .tint(tintColor)
+        .foregroundStyle(scheme == .dark ? Color.black : Color.white)
         .controlSize(.large)
         .accessibilityLabel(Text(title))
     }
+    
+    private var tintColor: Color {
+        switch style {
+        case .primary:
+            return MulticolorAccent.color(for: .primary)
+        case .success:
+            return MulticolorAccent.color(for: .success)
+        }
+    }
 }
+
+enum PrimaryButtonStyle {
+    case primary
+    case success
+}
+

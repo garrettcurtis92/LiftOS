@@ -15,9 +15,11 @@ struct CheckChip: View {
             HStack(spacing: 6) {
                 Image(systemName: isOn ? "checkmark" : "chevron.right")
                     .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(isOn ? MulticolorAccent.color(for: .success) : .primary)
                     .transition(.scale.combined(with: .opacity))
                 Text(isOn ? "Done" : "Set")
                     .font(.caption.weight(.semibold))
+                    .foregroundStyle(isOn ? MulticolorAccent.color(for: .success) : .primary)
                     .textCase(.uppercase)
                     .tracking(0.6)
             }

@@ -70,7 +70,7 @@ struct GlobalSchedulePopover: View {
                 .padding(.top, DS.Space.md.rawValue)
             }
 
-            HStack { Spacer(); PrimaryButton(title: "Done", systemIcon: "checkmark.circle.fill") { onClose() } .padding(.horizontal, DS.Space.lg.rawValue).padding(.bottom, DS.Space.lg.rawValue) }
+            HStack { Spacer(); PrimaryButton(title: "Done", systemIcon: "checkmark.circle.fill", style: .success) { onClose() } .padding(.horizontal, DS.Space.lg.rawValue).padding(.bottom, DS.Space.lg.rawValue) }
         }
         .alert("Switch to Week \(pendingSelection?.week ?? 1)?", isPresented: $showWeekSwitchAlert) {
             Button("Cancel", role: .cancel) { pendingSelection = nil }
