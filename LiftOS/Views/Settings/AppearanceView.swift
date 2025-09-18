@@ -12,6 +12,7 @@ struct AppearanceView: View {
         Form {
             AccentPickerSection()
         }
+        .tint(MulticolorAccent.color(for: .primary))
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -115,6 +116,9 @@ struct AccentPickerSection: View {
     
     private func setSelected(_ choice: AccentChoice) {
         accentChoiceRaw = choice.rawValue
+        #if canImport(UIKit)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        #endif
     }
 
     // 3-column grid for better layout
@@ -149,7 +153,7 @@ private struct AccentChip: View {
                     .frame(width: 36, height: 36)
                     .overlay(
                         Circle()
-                            .strokeBorder(isSelected ? Color.primary.opacity(0.3) : Color.secondary.opacity(0.2), lineWidth: 2)
+                            .strokeBorder(isSelected ? Color.primary.opacity(0.45) : Color.secondary.opacity(0.2), lineWidth: 2)
                     )
                 
                 if choice == .multicolor {
@@ -180,4 +184,6 @@ private struct AccentChip: View {
         choice == .multicolor ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(choice.color)
     }
 }
-
+#Preview{
+    AppearanceView()
+}
