@@ -136,8 +136,8 @@ struct WorkoutSessionView: View {
             }
         }
         
-        .onChange(of: restTimerEnabled) { enabled in
-            if !enabled { showRestTimer = false }
+        .onChange(of: restTimerEnabled) { oldValue, newValue in
+            if !newValue { showRestTimer = false }
         }
         // Floating timer toggle button (bottom-right), stays out of the main flow
         .overlay(alignment: .bottomTrailing) {
@@ -263,3 +263,4 @@ struct WorkoutBackground: View {
         .ignoresSafeArea()
     }
 }
+
