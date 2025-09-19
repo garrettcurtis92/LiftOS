@@ -1,44 +1,53 @@
 import SwiftUI
 
 struct MesocyclesView: View {
-    @State private var showBuilder = false
+    let onOpenTrain: (UUID) -> Void
+    // TODO: replace with SwiftData fetch
+    @State private var items: [MesocycleItem] = [
+        .init(id: UUID(), name: "Quick One G", weekCount: 4, daysPerWeek: 3, isCurrent: true,  isCompleted: false),
+        .init(id: UUID(), name: "Garrett",      weekCount: 8, daysPerWeek: 4, isCurrent: false, isCompleted: true),
+    ]
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                Spacer()
-
-                Text("No mesocycles yet")
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-
-                Text("Create a plan to unlock the calendar and auto-progression.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-
-                Spacer()
-            }
-            .navigationTitle("Mesocycles")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        // TODO: Add action to create mesocycle
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
+            NavigationStack {
+                List {
+                    ForEach(items, id: \.id) { item in
+                        Button {
+                            // Safely unwrap AnyHashable → UUID
+                            if let uuid = item.id as? UUID {
+                                onOpenTrain(uuid)
+                            }
+                        } label: {
+                            MesocycleRowView(
+                                item: item,
+                                onNewNote: {  },
+                                onRename: {  },
+                                onCopy: {  },
+                                onSummary: {  },
+                                onSaveTemplate: {  },
+                                onDelete: { delete(item) }
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .contentShape(Rectangle())
+                        .swipeActions {
+                            Button(role: .destructive) { delete(item) } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
-                    .accessibilityLabel("New mesocycle")
                 }
+                .navigationTitle("Mesocycles")
             }
-            .sheet(isPresented: $showBuilder) {
-                NavigationStack {
-                    
-                }
-                .presentationDetents([.large])
-                .presentationCornerRadius(20)
-            }
-            .background(WorkoutBackground().ignoresSafeArea())
+        }
+
+    private func delete(_ item: MesocycleItem) {
+        if let idx = items.firstIndex(of: item) {
+            items.remove(at: idx)
+            #if canImport(UIKit)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            #endif
         }
     }
 }
+

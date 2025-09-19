@@ -3,10 +3,15 @@ import SwiftData
 
 @main
 struct LiftOSApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([Exercise.self])
-        let config = ModelConfiguration(isStoredInMemoryOnly: false)
-        return try! ModelContainer(for: schema, configurations: config)
+    let sharedModelContainer: ModelContainer = {
+           let schema = Schema([Exercise.self])
+           let config = ModelConfiguration(isStoredInMemoryOnly: false)
+           do {
+               return try ModelContainer(for: schema, configurations: config)
+           } catch {
+               assertionFailure("Failed to load ModelContainer: \(error)")
+               fatalError("Unrecoverable SwiftData error")
+           }
     }()
 
     var body: some Scene {

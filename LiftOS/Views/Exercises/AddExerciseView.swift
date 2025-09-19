@@ -27,13 +27,13 @@ struct AddExerciseView: View {
                         .autocorrectionDisabled()
 
                     Picker("Muscle Group", selection: $muscleGroup) {
-                        ForEach(Exercise.MuscleGroup.allCases) { mg in
-                            Text(mg.id.capitalized).tag(mg)
+                        ForEach(Exercise.MuscleGroup.allCases, id: \.rawValue) { mg in
+                            Text(mg.rawValue.capitalized).tag(mg)
                         }
                     }
 
                     Picker("Exercise Type", selection: $type) {
-                        ForEach(Exercise.ExerciseType.allCases) { t in
+                        ForEach(Exercise.ExerciseType.allCases, id: \.rawValue) { t in
                             Text(readableType(t)).tag(t)
                         }
                     }
@@ -74,7 +74,7 @@ struct AddExerciseView: View {
         case .barbell: return "Barbell"
         case .smithMachine: return "Smith Machine"
         case .dumbbell: return "Dumbbell"
-        case .cableFreeMotion: return "Cable / Free Motion"
+        case .cable: return "Cable / Free Motion"
         case .bodyweightOnly: return "Bodyweight Only"
         case .bodyweightLoadable: return "Bodyweight Loadable"
         case .machineAssistance: return "Machine Assistance"

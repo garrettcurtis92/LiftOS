@@ -8,6 +8,7 @@ struct ExerciseView: View {
     private var store: ExerciseStore { ExerciseStore(modelContext: modelContext) }
     @State private var customs: [Exercise] = []
     @State private var showAddSheet = false
+    @State private var showDiagnostics = false
     @State private var errorMessage: String?
     @State private var selectedExercise: Exercise?
     @State private var showEditSheet = false
@@ -19,9 +20,10 @@ struct ExerciseView: View {
 
     private var filteredCustoms: [Exercise] {
         customs.filter { ex in
-            let mgOK = selectedMuscleGroup == nil || ex.muscleGroup == selectedMuscleGroup!
-            let typeOK = selectedType == nil || ex.type == selectedType!
-            return mgOK && typeOK
+            // Break into simple checks to help the type-checker
+            if let mg = selectedMuscleGroup, ex.muscleGroup != mg { return false }
+            if let t = selectedType, ex.type != t { return false }
+            return true
         }
     }
 
@@ -51,7 +53,7 @@ struct ExerciseView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
                                 if let mg = selectedMuscleGroup {
-                                    FilterChip(title: mg.id.capitalized) {
+                                    FilterChip(title: String(describing: mg).capitalized) {
                                         selectedMuscleGroup = nil
                                     }
                                 }
@@ -79,7 +81,7 @@ struct ExerciseView: View {
                             HStack(alignment: .firstTextBaseline) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(ex.name).font(.headline)
-                                    Text("\(ex.muscleGroup.id) • \(ex.type.id)")
+                                    Text("\(String(describing: ex.muscleGroup)) • \(String(describing: ex.type))")
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
 
@@ -152,14 +154,14 @@ struct ExerciseView: View {
                         // MUSCLE GROUP
                         Menu("Muscle Group") {
                             Button("All") { selectedMuscleGroup = nil }
-                            ForEach(Exercise.MuscleGroup.allCases) { mg in
-                                Button(mg.id.capitalized) { selectedMuscleGroup = mg }
+                            ForEach(Exercise.MuscleGroup.allCases, id: \.self) { mg in
+                                Button(String(describing: mg).capitalized) { selectedMuscleGroup = mg }
                             }
                         }
                         // EXERCISE TYPE
                         Menu("Exercise Type") {
                             Button("All") { selectedType = nil }
-                            ForEach(Exercise.ExerciseType.allCases) { t in
+                            ForEach(Exercise.ExerciseType.allCases, id: \.self) { t in
                                 Button(readableType(t)) { selectedType = t }
                             }
                         }
@@ -175,6 +177,15 @@ struct ExerciseView: View {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
                     .accessibilityLabel("Filter")
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showDiagnostics = true
+                    } label: {
+                        Image(systemName: "wrench.adjustable")
+                    }
+                    .accessibilityLabel("Catalog Diagnostics")
                 }
 
                 // Keep existing + button
@@ -229,6 +240,10 @@ struct ExerciseView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showDiagnostics) {
+                CatalogDiagnosticsView()
+                    .presentationDetents([.medium, .large])
+            }
             .alert("Error", isPresented: Binding(get: { errorMessage != nil },
                                                  set: { if !$0 { errorMessage = nil } })) {
                 Button("OK", role: .cancel) { }
@@ -271,7 +286,7 @@ struct ExerciseView: View {
         case .barbell: return "Barbell"
         case .smithMachine: return "Smith Machine"
         case .dumbbell: return "Dumbbell"
-        case .cableFreeMotion: return "Cable / Free Motion"
+        case .cable: return "Cable / Free Motion"
         case .bodyweightOnly: return "Bodyweight Only"
         case .bodyweightLoadable: return "Bodyweight Loadable"
         case .machineAssistance: return "Machine Assistance"
@@ -308,13 +323,13 @@ struct EditExerciseView: View {
                         .autocorrectionDisabled()
 
                     Picker("Muscle Group", selection: $muscleGroup) {
-                        ForEach(Exercise.MuscleGroup.allCases) { mg in
-                            Text(mg.id.capitalized).tag(mg)
+                        ForEach(Exercise.MuscleGroup.allCases, id: \.self) { mg in
+                            Text(String(describing: mg).capitalized).tag(mg)
                         }
                     }
 
                     Picker("Exercise Type", selection: $type) {
-                        ForEach(Exercise.ExerciseType.allCases) { t in
+                        ForEach(Exercise.ExerciseType.allCases, id: \.self) { t in
                             Text(readableType(t)).tag(t)
                         }
                     }
@@ -352,7 +367,7 @@ struct EditExerciseView: View {
         case .barbell: return "Barbell"
         case .smithMachine: return "Smith Machine"
         case .dumbbell: return "Dumbbell"
-        case .cableFreeMotion: return "Cable / Free Motion"
+        case .cable: return "Cable / Free Motion"
         case .bodyweightOnly: return "Bodyweight Only"
         case .bodyweightLoadable: return "Bodyweight Loadable"
         case .machineAssistance: return "Machine Assistance"
@@ -408,3 +423,4 @@ struct FilterChip: View {
         .onTapGesture { onClear() }
     }
 }
+

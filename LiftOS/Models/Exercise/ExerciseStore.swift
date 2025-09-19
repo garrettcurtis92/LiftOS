@@ -36,9 +36,10 @@ final class ExerciseStore: ObservableObject {
                 if try !exists(name: item.name, type: item.type) {
                     let ex = Exercise(
                         name: item.name,
+                        source: .prefill,
                         muscleGroup: item.muscleGroup,
                         type: item.type,
-                        source: .prefill,
+                        loadBasis: item.loadBasis,   // pass through (defaults cover nil)
                         youtubeVideoID: item.youtubeVideoID
                     )
                     modelContext.insert(ex)
@@ -80,9 +81,9 @@ final class ExerciseStore: ObservableObject {
         guard try !exists(name: name, type: type) else { throw ExerciseError.duplicateName }
 
         let ex = Exercise(name: name,
+                          source: .custom,
                           muscleGroup: muscleGroup,
                           type: type,
-                          source: .custom,
                           youtubeVideoID: youtubeVideoID)
         modelContext.insert(ex)
         try modelContext.save()
@@ -124,6 +125,37 @@ final class ExerciseStore: ObservableObject {
         }
     }
 
+    // MARK: - Diagnostics
+    // All prefills count
+    func countPrefills() throws -> Int {
+        let v = Exercise.Source.prefill.rawValue
+        let d = FetchDescriptor<Exercise>(
+            predicate: #Predicate { $0.sourceRaw == v }
+        )
+        return try modelContext.fetchCount(d)
+    }
+
+    // Prefills by muscle
+    func countPrefills(by muscle: Exercise.MuscleGroup) throws -> Int {
+        let v = Exercise.Source.prefill.rawValue
+        let m = muscle.rawValue
+        let d = FetchDescriptor<Exercise>(
+            predicate: #Predicate { $0.sourceRaw == v && $0.muscleGroupRaw == m }
+        )
+        return try modelContext.fetchCount(d)
+    }
+
+    // Sample prefills
+    func samplePrefills(limit: Int = 10) throws -> [Exercise] {
+        let v = Exercise.Source.prefill.rawValue
+        var d = FetchDescriptor<Exercise>(
+            predicate: #Predicate { $0.sourceRaw == v },
+            sortBy: [SortDescriptor(\.name)]
+        )
+        d.fetchLimit = limit
+        return try modelContext.fetch(d)
+    }
+
     // MARK: - Notes
     func addNote(for exercise: Exercise, text: String) throws {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -156,5 +188,5 @@ struct SeedExercise: Decodable {
     let muscleGroup: Exercise.MuscleGroup
     let type: Exercise.ExerciseType
     let youtubeVideoID: String?
+    let loadBasis: Exercise.LoadBasis? // <- NEW (optional so older JSON still works)
 }
-

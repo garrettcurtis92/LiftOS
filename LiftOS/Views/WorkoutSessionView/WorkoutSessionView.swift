@@ -9,6 +9,7 @@ struct WorkoutSessionView: View {
     // Input
     var dayLabel: String? = nil
     private let preset: String
+    let mesocycleID: UUID?
 
     // App-wide prefs used within view
     @AppStorage("weightUnit") private var weightUnit: WeightUnit = .lb
@@ -37,25 +38,15 @@ struct WorkoutSessionView: View {
         return names[ix]
     }
 
-    init(dayLabel: String? = nil, preset: String) {
+    init(dayLabel: String? = nil, preset: String, mesocycleID: UUID? = nil) {
         self.dayLabel = dayLabel
         self.preset = preset
+        self.mesocycleID = mesocycleID
         self._session = State(initialValue: WorkoutSessionView.makeSession(title: preset))
     }
 
     var body: some View {
     List {
-            // Train header to match other views
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Train")
-                    .font(.largeTitle.weight(.bold))
-                    .foregroundStyle(.primary)
-            }
-            .padding(.horizontal, DS.Space.lg.rawValue)
-            .padding(.top, DS.Space.lg.rawValue)
-            .listRowInsets(.init())
-            .listRowBackground(Color.clear)
-            
             ForEach(session.exercises) { ex in
                 ExerciseSetsSection(
                     exercise: ex,
@@ -72,7 +63,6 @@ struct WorkoutSessionView: View {
         .scrollContentBackground(.hidden)
         .background(WorkoutBackground())
         .listStyle(.insetGrouped)
-    .navigationBarTitleDisplayMode(.inline)
         // Bottom finish bar (only when all sets done)
         .safeAreaInset(edge: .bottom) {
             if allSetsDone && !showRestTimer {
@@ -103,30 +93,12 @@ struct WorkoutSessionView: View {
             for i in session.exercises.indices { session.exercises[i].rirTarget = target }
         }
         .toolbar {
-            // Two-line centered title with full weekday
-            ToolbarItem(placement: .principal) {
-                VStack(spacing: 2) {
-                    Text(mesocycleName)
-                        .font(.headline)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-
-                    Text("Week \(currentWeek) day \(currentDayIx + 1) \(weekdayName(for: currentDayIx))")
-                        .font(TypeScale.subheadline())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
-                .frame(maxWidth: .infinity)
-            }
             // Keyboard accessory Done button
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") { focusedField = nil }
             }
         }
-        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
     .sheet(item: $lastSummary, onDismiss: { advanceToNextDay() }) { s in
             NavigationStack { SessionSummaryView(summary: s) }
         }
@@ -263,4 +235,3 @@ struct WorkoutBackground: View {
         .ignoresSafeArea()
     }
 }
-

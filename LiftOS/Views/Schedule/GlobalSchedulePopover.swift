@@ -79,3 +79,4 @@ struct GlobalSchedulePopover: View {
         .presentationDetents([.large])
     }
 }
+

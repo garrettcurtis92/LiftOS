@@ -1,6 +1,0 @@
-[
-  { "name": "Barbell Bench Press", "muscleGroup": "chest", "type": "barbell", "youtubeVideoID": null },
-  { "name": "Incline Dumbbell Press", "muscleGroup": "chest", "type": "dumbbell", "youtubeVideoID": null },
-  { "name": "Lat Pulldown", "muscleGroup": "back", "type": "machine", "youtubeVideoID": null },
-  { "name": "Cable Row", "muscleGroup": "back", "type": "cableFreeMotion", "youtubeVideoID": null }
-]
