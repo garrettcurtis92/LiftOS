@@ -62,38 +62,39 @@ struct WorkoutSessionView: View {
         }
         .scrollContentBackground(.hidden)
         .background(WorkoutBackground())
+        .scrollDismissesKeyboard(.interactively)
         .listStyle(.insetGrouped)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .toolbarTitleDisplayMode(.large)
+        .navigationTitle("Train")
         // Bottom finish bar (only when all sets done)
         .safeAreaInset(edge: .bottom) {
             if allSetsDone && !showRestTimer {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 0) {
-                        PrimaryButton(title: "Finish Session", systemIcon: "checkmark.circle.fill", style: .success) {
-                            Haptics.success()
-                            finishSession()
-                        }
-                        .padding(.horizontal, DS.Space.lg.rawValue)
-                        .padding(.vertical, DS.Space.md.rawValue)
+                HStack(spacing: 12) {
+                    Spacer(minLength: 12)
+                    Button {
+                        Haptics.success()
+                        finishSession()
+                    } label: {
+                        Label("Finish Session", systemImage: "checkmark.circle.fill")
+                            .labelStyle(.titleAndIcon)
                     }
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .shadow(radius: 8, y: 2)
-                    .padding(.horizontal, DS.Space.lg.rawValue)
-                    .padding(.bottom, DS.Space.xl.rawValue)
-                    Spacer()
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityLabel("Finish session")
                 }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .animation(.snappy, value: allSetsDone)
+                .padding(.horizontal, DS.Space.lg.rawValue)
+                .padding(.vertical, DS.Space.md.rawValue)
+                .background(.ultraThinMaterial)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.snappy, value: allSetsDone)
             }
         }
-    .padding(.bottom, (allSetsDone && !showRestTimer) ? DS.Space.lg.rawValue : 0)
         // Apply week-based RIR on appear
         .onAppear {
             let target = MesocycleRules.rirTarget(forWeek: currentWeek)
             for i in session.exercises.indices { session.exercises[i].rirTarget = target }
         }
         .toolbar {
-            // Keyboard accessory Done button
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") { focusedField = nil }
@@ -102,7 +103,7 @@ struct WorkoutSessionView: View {
     .sheet(item: $lastSummary, onDismiss: { advanceToNextDay() }) { s in
             NavigationStack { SessionSummaryView(summary: s) }
         }
-        . sheet(isPresented: $showRestTimer) {
+        .sheet(isPresented: $showRestTimer) {
             RestTimerView(seconds: lastRestDuration) {
                 showRestTimer = false
             }
@@ -132,6 +133,7 @@ struct WorkoutSessionView: View {
                         .shadow(color: Color.black.opacity(0.18), radius: 6, y: 2)
                 }
                 .accessibilityLabel(restTimerEnabled ? "Disable rest timer" : "Enable rest timer")
+                .accessibilityValue(restTimerEnabled ? "On" : "Off")
                 .padding(.trailing, DS.Space.lg.rawValue)
                 .padding(.bottom, allSetsDone ? DS.Space.xxl.rawValue : DS.Space.lg.rawValue)
             }
@@ -235,3 +237,4 @@ struct WorkoutBackground: View {
         .ignoresSafeArea()
     }
 }
+

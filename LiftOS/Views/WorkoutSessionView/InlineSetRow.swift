@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct InlineSetRow: View {
@@ -66,46 +65,61 @@ struct InlineSetRow: View {
     var body: some View {
         HStack(spacing: DS.Space.sm.rawValue) {
             HStack(spacing: 8) {
-                Menu {
-                    Button("Add set", action: onAddSet)
-                    Button("Skip set", action: onSkip)
-                    Button(role: .destructive) { onDelete() } label: { Text("Delete set") }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .imageScale(.medium)
-                        .foregroundStyle(.secondary)
-                        .accessibilityLabel("Set options")
-                }
-
                 TextField(weightUnit.display, text: $weightText)
                     .keyboardType(.decimalPad)
+                    .font(.body.monospacedDigit())
                     .multilineTextAlignment(.leading)
                     .focused(focusedField, equals: .weight(exerciseID, index))
                     .submitLabel(.next)
-                    .frame(minWidth: 44)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel("Weight in \(weightUnit.display)")
+                    .accessibilityValue(weightText.isEmpty ? "Not set" : weightText)
 
                 Button { nudgeWeight(-nudgeStep) } label: { Image(systemName: "minus.circle") }
                     .buttonStyle(.plain)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+                    .accessibilityLabel("Decrease weight")
                 Button { nudgeWeight(+nudgeStep) } label: { Image(systemName: "plus.circle") }
                     .buttonStyle(.plain)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+                    .accessibilityLabel("Increase weight")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            TextField("\(rirTarget) RIR", text: $repsText)
+            TextField("Reps", text: $repsText)
                 .keyboardType(.numberPad)
+                .font(.body.monospacedDigit())
                 .multilineTextAlignment(.center)
                 .focused(focusedField, equals: .reps(exerciseID, index))
                 .submitLabel(index < totalSets ? .next : .done)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .accessibilityLabel("Repetitions")
+                .accessibilityHint("Target \(rirTarget) R I R")
 
             CheckChip(isOn: $checked) {
                 commit()
             }
+            .frame(minWidth: 44, minHeight: 44)
+            .accessibilityLabel(checked ? "Set complete" : "Mark set complete")
+            .accessibilityHint("Double tap to toggle")
+            .contentShape(Rectangle())
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.vertical, 8)
         .contentShape(Rectangle())
-        .onSubmit { handleSubmit() }
+        .onSubmit {
+            let current = focusedField.wrappedValue
+            let next = nextField(after: current)
+            focusedField.wrappedValue = next
+            if case .reps(exerciseID, _) = current {
+                if !weightText.isEmpty, !repsText.isEmpty {
+                    checked = true
+                    commit()
+                }
+            }
+        }
         .onChange(of: previousWeight) {
             if weightText.isEmpty, let newWeight = previousWeight {
                 weightText = String(Int(newWeight))
@@ -129,22 +143,14 @@ struct InlineSetRow: View {
         commitSoft()
     }
 
-    private func handleSubmit() {
-        switch focusedField.wrappedValue {
-        case .weight(exerciseID, index):
-            focusedField.wrappedValue = .reps(exerciseID, index)
-        case .reps(exerciseID, index):
-            if index < totalSets {
-                focusedField.wrappedValue = .weight(exerciseID, index + 1)
-            } else {
-                focusedField.wrappedValue = nil
-            }
-            if !weightText.isEmpty, !repsText.isEmpty {
-                checked = true
-                commit()
-            }
+    private func nextField(after current: SessionField?) -> SessionField? {
+        switch current {
+        case .weight(let id, let i) where id == exerciseID:
+            return .reps(exerciseID, i)
+        case .reps(let id, let i) where id == exerciseID:
+            return i < totalSets ? .weight(exerciseID, i + 1) : nil
         default:
-            break
+            return nil
         }
     }
 

@@ -26,8 +26,8 @@ final class ExerciseStore: ObservableObject {
         guard !hasSeededExercises else { return }
 
         // Load bundled JSON (150+ exercises) and insert as .prefill
-        // See: ExercisesSeed.json in the app bundle.
-        if let url = Bundle.main.url(forResource: "ExercisesSeed", withExtension: "json") {
+        // See: exercises.json in the app bundle.
+        if let url = Bundle.main.url(forResource: "exercises", withExtension: "json") {
             let data = try Data(contentsOf: url)
             let items = try JSONDecoder().decode([SeedExercise].self, from: data)
 
@@ -51,7 +51,7 @@ final class ExerciseStore: ObservableObject {
             // If the file is missing, we just move on (customs will still work).
             // You can assert in debug if you prefer.
             #if DEBUG
-            print("⚠️ ExercisesSeed.json not found in bundle.")
+            print("⚠️ exercises.json not found in bundle.")
             #endif
         }
     }
@@ -71,6 +71,9 @@ final class ExerciseStore: ObservableObject {
         )
         return try modelContext.fetch(descriptor)
     }
+    // Convenience read-only properties for UI layers that don't want to try/catch
+    var customs: [Exercise] { (try? fetchCustoms()) ?? [] }
+    var prefills: [Exercise] { (try? fetchPrefills()) ?? [] }
 
     // MARK: - Mutations (Customs)
     func addCustom(name: String,

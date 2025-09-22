@@ -39,6 +39,15 @@ struct ExerciseSetsSection: View {
             onDelete: { onDeleteSet(idx) }
         )
         .id("\(exercise.id)-\(idx)-\(existingSets.count)")
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button { onSkipSet(idx) } label: {
+                Label("Skip", systemImage: "forward.end")
+            }
+            Button(role: .destructive) { onDeleteSet(idx) } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .accessibilityHint("Swipe for skip or delete")
     }
 
     var body: some View {
@@ -49,18 +58,31 @@ struct ExerciseSetsSection: View {
             ForEach(indices, id: \.self) { idx in
                 row(for: idx)
             }
-        } header: {
-            VStack(alignment: .leading, spacing: 4) {
-                ExerciseSectionHeader(primary: exercise.name, secondary: nil)
+            Button {
+                onAddSet()
+            } label: {
                 HStack {
                     Spacer()
-                    Text("\(doneCount)/\(exercise.targetSets)")
-                        .font(TypeScale.footnote())
-                        .foregroundStyle(DS.colors.secondaryLabel)
-                        .monospaced()
-                        .accessibilityLabel("Completed \(doneCount) of \(exercise.targetSets) sets")
+                    Label("Add set", systemImage: "plus")
+                        .labelStyle(.titleAndIcon)
+                        .font(.callout.weight(.semibold))
+                    Spacer()
                 }
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Add set")
+        } header: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(exercise.name)
+                    .font(.headline)
+
+                ProgressView(value: Double(doneCount), total: Double(exercise.targetSets))
+                    .progressViewStyle(.linear)
+                    .tint(.secondary)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(exercise.name) progress")
+            .accessibilityValue("\(doneCount) of \(exercise.targetSets) sets")
         }
         .listRowBackground(Color.clear)
     }
