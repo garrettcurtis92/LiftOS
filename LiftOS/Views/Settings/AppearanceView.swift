@@ -7,9 +7,29 @@
 
 import SwiftUI
 
+enum ThemeChoice: String, CaseIterable, Identifiable {
+    case system
+    case neutral
+    case deepGreen
+    case goldAccent
+
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .system: return "System"
+        case .neutral: return "Neutral"
+        case .deepGreen: return "Deep Green"
+        case .goldAccent: return "Gold Accent"
+        }
+    }
+}
+
 struct AppearanceView: View {
     var body: some View {
         Form {
+            Section("Theme") {
+                ThemePicker()
+            }
             AccentPickerSection()
         }
         .tint(MulticolorAccent.color(for: .primary))
@@ -74,7 +94,20 @@ struct MulticolorAccent {
     
     static func color(for context: MulticolorContext) -> Color {
         let choice = AccentChoice(rawValue: accentChoiceRaw) ?? .multicolor
-        
+        let theme = ThemeChoice(rawValue: UserDefaults.standard.string(forKey: "appTheme") ?? ThemeChoice.system.rawValue) ?? .system
+
+        // Theme overrides take precedence
+        switch theme {
+        case .system:
+            break // fall through to accent choice below
+        case .neutral:
+            return .gray
+        case .deepGreen:
+            return .green
+        case .goldAccent:
+            return .yellow
+        }
+
         if choice == .multicolor {
             return context.color
         } else {
@@ -184,6 +217,28 @@ private struct AccentChip: View {
         choice == .multicolor ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(choice.color)
     }
 }
+
+// MARK: - Theme Picker
+
+struct ThemePicker: View {
+    @AppStorage("appTheme") private var themeRaw: String = ThemeChoice.system.rawValue
+
+    private var selected: ThemeChoice { ThemeChoice(rawValue: themeRaw) ?? .system }
+
+    var body: some View {
+        Picker("Theme", selection: Binding(
+            get: { selected },
+            set: { themeRaw = $0.rawValue }
+        )) {
+            ForEach(ThemeChoice.allCases) { t in
+                Text(t.label).tag(t)
+            }
+        }
+        .pickerStyle(.segmented)
+        .accessibilityLabel("App Theme")
+    }
+}
+
 #Preview{
     AppearanceView()
 }

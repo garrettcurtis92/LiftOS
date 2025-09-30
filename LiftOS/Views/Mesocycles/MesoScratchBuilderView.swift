@@ -5,17 +5,22 @@
 //  Created by Garrett Curtis on 9/19/25.
 //
 import SwiftUI
+import SwiftData
 
 struct MesoScratchBuilderView: View {
+    let name: String
+    let weekCount: Int
     let daysPerWeek: Int
+    let onComplete: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedDayIx: Int = 0
     @State private var days: [[MuscleGroup]]
     @State private var showPicker = false
-    @State private var showExercisePicker = false
     @State private var activeGroupForExercises: MuscleGroup? = nil
-    @State private var exercisesByDay: [Int: [MuscleGroup: [Exercise]]] = [:]
+    @State private var activeGroupIndex: Int? = nil
+    @State private var exercisesByDay: [Int: [Int: [Exercise]]] = [:]
 
     // All days must have at least one selected exercise
     private var allDaysHaveAtLeastOneExercise: Bool {
@@ -28,8 +33,11 @@ struct MesoScratchBuilderView: View {
         return true
     }
 
-    init(daysPerWeek: Int) {
+    init(name: String, weeks: Int, daysPerWeek: Int, onComplete: (() -> Void)? = nil) {
+        self.name = name
+        self.weekCount = weeks
         self.daysPerWeek = daysPerWeek
+        self.onComplete = onComplete
         // one empty array per day
         _days = State(initialValue: Array(repeating: [], count: max(1, daysPerWeek)))
     }
@@ -58,15 +66,15 @@ struct MesoScratchBuilderView: View {
             } else {
                 List {
                     Section("Muscle groups") {
-                        ForEach(days[selectedDayIx], id: \.self) { group in
+                        ForEach(Array(days[selectedDayIx].enumerated()), id: \.offset) { (idx, group) in
                             Button {
                                 activeGroupForExercises = group
-                                showExercisePicker = true
+                                activeGroupIndex = idx
                             } label: {
                                 HStack(alignment: .firstTextBaseline) {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Label(group.title, systemImage: group.symbol)
-                                        if let name = exercisesByDay[selectedDayIx]?[group]?.first?.name {
+                                        if let name = exercisesByDay[selectedDayIx]?[idx]?.first?.name {
                                             Text(name)
                                                 .font(.footnote)
                                                 .foregroundStyle(.secondary)
@@ -82,7 +90,21 @@ struct MesoScratchBuilderView: View {
                             .buttonStyle(.plain)
                         }
                         .onDelete { indexSet in
+                            // Remove the groups from the day list
                             days[selectedDayIx].remove(atOffsets: indexSet)
+                            // Reindex the exercises mapping for this day
+                            if let map = exercisesByDay[selectedDayIx] {
+                                var updated: [Int: [Exercise]] = [:]
+                                for (oldIndex, exList) in map {
+                                    // Skip removed indices
+                                    if indexSet.contains(oldIndex) { continue }
+                                    // Shift indices down by the number of removed items before this index
+                                    let shift = indexSet.filter { $0 < oldIndex }.count
+                                    let newIndex = oldIndex - shift
+                                    updated[newIndex] = exList
+                                }
+                                exercisesByDay[selectedDayIx] = updated
+                            }
                         }
                     }
                 }
@@ -104,7 +126,12 @@ struct MesoScratchBuilderView: View {
         .safeAreaInset(edge: .bottom) {
             HStack {
                 Button {
-                    // TODO: build + save model, then dismiss()
+                    saveMesocycle()
+                    // Dismiss builder first, then dismiss parent creator view
+                    dismiss()
+                    DispatchQueue.main.async {
+                        if let onComplete { onComplete() }
+                    }
                 } label: {
                     Text("Create Mesocycle")
                         .font(.headline)
@@ -126,16 +153,82 @@ struct MesoScratchBuilderView: View {
             }
             .presentationDetents([.medium])
         }
-        .sheet(isPresented: $showExercisePicker) {
-            if let group = activeGroupForExercises {
-                ExercisePickerView(group: group) { exercise in
-                    var dayMap = exercisesByDay[selectedDayIx] ?? [:]
-                    dayMap[group] = [exercise]
-                    exercisesByDay[selectedDayIx] = dayMap
+        .sheet(item: $activeGroupForExercises) { group in
+            ExercisePickerView(group: group) { exercise in
+                var dayMap = exercisesByDay[selectedDayIx] ?? [:]
+                if let ix = activeGroupIndex {
+                    dayMap[ix] = [exercise]
                 }
-                .presentationDetents([.medium, .large])
+                exercisesByDay[selectedDayIx] = dayMap
             }
+            .presentationDetents([.medium, .large])
         }
+    }
+
+    private func saveMesocycle() {
+        // Basic validation: require at least one exercise per day
+        guard allDaysHaveAtLeastOneExercise else { return }
+
+        // Build immutable plan snapshot from the current UI selections
+        var snapshot: [MesoDayTemplate] = []
+        for dayIx in 0..<daysPerWeek {
+            let map = exercisesByDay[dayIx] ?? [:]
+            let ordered = map.keys.sorted()
+            var templates: [MesoExerciseTemplate] = []
+            for key in ordered {
+                guard let ex = map[key]?.first else { continue }
+                let display = ex.name
+                let norm = PlanKey.normalize(display)
+                // Default sets and rep window. Today we don’t collect per-ex values in the builder, so use 3 x 8...10.
+                let defaultSets = 3
+                let repLo: Int? = 8
+                let repHi: Int? = 10
+                let notes: String? = nil
+                templates.append(MesoExerciseTemplate(
+                    exerciseDisplayName: display,
+                    normalizedKey: norm,
+                    defaultSets: defaultSets,
+                    repRangeLower: repLo,
+                    repRangeUpper: repHi,
+                    notes: notes
+                ))
+            }
+            snapshot.append(MesoDayTemplate(dayIx: dayIx, exercises: templates))
+        }
+
+        // Demote any existing current mesocycles so only one is current
+        if let currents = try? modelContext.fetch(FetchDescriptor<Mesocycle>(predicate: #Predicate { $0.isCurrent == true })) {
+            for m in currents { m.isCurrent = false }
+        }
+
+        let finalName = name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "New Mesocycle" : name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let meso = Mesocycle(
+            name: finalName,
+            weekCount: weekCount,
+            daysPerWeek: daysPerWeek,
+            isCurrent: true,
+            startDate: Date(),
+            labelStyle: .fixedWeekdays
+        )
+        meso.planSnapshot = snapshot
+
+        // Also persist relational structure for existing UIs; sessions will prefer snapshot when available.
+        for dayIx in 0..<daysPerWeek {
+            let day = MesoDay(index: dayIx)
+            day.mesocycle = meso
+            let map = exercisesByDay[dayIx] ?? [:]
+            for (idx, exList) in map.sorted(by: { $0.key < $1.key }) {
+                // Use the original selected muscle group from days array (by index)
+                let group = days[dayIx][idx]
+                let selection = MesoSelection(muscleGroupRaw: group.rawValue, exercise: exList.first)
+                selection.day = day
+                day.selections.append(selection)
+            }
+            meso.days.append(day)
+        }
+
+        modelContext.insert(meso)
+        try? modelContext.save()
     }
 }
 
@@ -175,7 +268,7 @@ private struct MuscleGroupPicker: View {
 }
 
 // MARK: - Types
-enum MuscleGroup: String, Hashable, CaseIterable {
+enum MuscleGroup: String, Hashable, CaseIterable, Identifiable {
     case chest, back, shoulders, biceps, triceps
     case quads, hamstrings, glutes, calves, core
 
@@ -210,6 +303,10 @@ enum MuscleGroup: String, Hashable, CaseIterable {
     }
 }
 
+extension MuscleGroup {
+    var id: String { rawValue }
+}
+
 private extension MuscleGroup {
     var exerciseGroup: Exercise.MuscleGroup {
         switch self {
@@ -234,10 +331,14 @@ private struct ExercisePickerView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var exercises: [Exercise] = []
     @State private var query: String = ""
+    @State private var isLoading: Bool = true
 
     var body: some View {
         NavigationStack {
-            if exercises.isEmpty {
+            if isLoading {
+                ProgressView("Loading…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if exercises.isEmpty {
                 ContentUnavailableView {
                     Label("No exercises for \(group.title)", systemImage: "line.3.horizontal.decrease.circle")
                 } description: {
@@ -271,19 +372,20 @@ private struct ExercisePickerView: View {
                 Button("Close") { dismiss() }
             }
         }
-        .task {
-            // Load catalog from your store (prefills + customs), then filter by schema muscleGroup
+        .task(id: group) {
+            isLoading = true
             let store = ExerciseStore(modelContext: modelContext)
             let all = store.prefills + store.customs
             let target = group.exerciseGroup
             exercises = all
                 .filter { $0.muscleGroup == target }
                 .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            isLoading = false
         }
     }
 }
 
 #Preview {
-    MesoScratchBuilderView(daysPerWeek: 4)
+    MesoScratchBuilderView(name: "Example", weeks: 4, daysPerWeek: 4)
 }
 

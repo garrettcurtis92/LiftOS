@@ -71,7 +71,8 @@ struct MesocycleRowView: View {
             } label: {
                 Image(systemName: "ellipsis.circle")
                     .imageScale(.large)
-                    .padding(.leading, 4)
+                    .padding(.horizontal, 8)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("More actions")
@@ -79,13 +80,13 @@ struct MesocycleRowView: View {
         .contentShape(Rectangle()) // full-row tap target
         // Quick actions for power users
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button("Rename", action: withHaptic(onRename)).tint(.blue)
-            Button("Copy", action: withHaptic(onCopy)).tint(.indigo)
             Button(role: .destructive) {
                 withHaptic(onDelete)()
             } label: {
                 Label("Delete", systemImage: "trash")
             }
+            Button("Copy", action: withHaptic(onCopy)).tint(.indigo)
+            Button("Rename", action: withHaptic(onRename)).tint(.blue)
         }
         // Optional: long-press context menu mirrors Menu
         .contextMenu {

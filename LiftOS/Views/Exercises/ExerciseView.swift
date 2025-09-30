@@ -8,7 +8,6 @@ struct ExerciseView: View {
     private var store: ExerciseStore { ExerciseStore(modelContext: modelContext) }
     @State private var customs: [Exercise] = []
     @State private var showAddSheet = false
-    @State private var showDiagnostics = false
     @State private var errorMessage: String?
     @State private var selectedExercise: Exercise?
     @State private var showEditSheet = false
@@ -179,15 +178,6 @@ struct ExerciseView: View {
                     .accessibilityLabel("Filter")
                 }
 
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showDiagnostics = true
-                    } label: {
-                        Image(systemName: "wrench.adjustable")
-                    }
-                    .accessibilityLabel("Catalog Diagnostics")
-                }
-
                 // Keep existing + button
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -239,10 +229,6 @@ struct ExerciseView: View {
                         } catch { errorMessage = error.localizedDescription }
                     }
                 }
-            }
-            .sheet(isPresented: $showDiagnostics) {
-                CatalogDiagnosticsView()
-                    .presentationDetents([.medium, .large])
             }
             .alert("Error", isPresented: Binding(get: { errorMessage != nil },
                                                  set: { if !$0 { errorMessage = nil } })) {

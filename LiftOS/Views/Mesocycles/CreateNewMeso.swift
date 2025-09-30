@@ -41,7 +41,8 @@ struct CreateNewMesoView: View {
             Section("Template") {
                 // Placeholder cards — you can replace with a nice Grid later
                 NavigationLink("Start from scratch") {
-                    MesoScratchBuilderView(daysPerWeek: daysPerWeek)}
+                    MesoScratchBuilderView(name: name, weeks: weeks, daysPerWeek: daysPerWeek, onComplete: { dismiss() })
+                }
                 NavigationLink("Start with a template") { Text("Template picker (placeholder)") }
                 NavigationLink("Copy an existing mesocycle") { Text("Copy (placeholder)") }
             }
@@ -66,4 +67,3 @@ struct CreateNewMesoView: View {
     }
     
 }
-

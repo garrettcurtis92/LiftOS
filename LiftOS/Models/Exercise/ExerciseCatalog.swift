@@ -31,7 +31,7 @@ enum ExerciseCatalog {
         let grouped = Dictionary(grouping: items, by: { $0.muscleGroup })
         // sort by muscle group, then by type then name
         return grouped
-            .map { (key: $0.key,
+            .map { (group: $0.key,
                     items: $0.value.sorted { ($0.type, $0.name) < ($1.type, $1.name) }) }
             .sorted { $0.group < $1.group }
     }

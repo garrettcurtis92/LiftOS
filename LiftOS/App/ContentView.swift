@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selectedTab: AppTab = .train
     @State private var selectedMesocycleID: UUID? = nil
+    @State private var didResolveCurrentMesoOnLaunch = false
     
     private var selectedAccentColor: Color? {
         let choice = AccentChoice(rawValue: accentChoiceRaw) ?? .multicolor
@@ -27,9 +28,20 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             // TRAIN
             NavigationStack {
-                TrainView(mesocycleID: selectedMesocycleID)
-                    .navigationTitle("Train")
-                    .navigationBarTitleDisplayMode(.large)
+                TrainView(
+                    mesocycleID: selectedMesocycleID,
+                    onGoToMesocycles: { selectedTab = .mesocycles },
+                    onClearActiveMesocycle: { selectedMesocycleID = nil }
+                )
+            }
+            .task {
+                guard !didResolveCurrentMesoOnLaunch else { return }
+                didResolveCurrentMesoOnLaunch = true
+                // Fetch current mesocycle and set selectedMesocycleID
+                let descriptor = FetchDescriptor<Mesocycle>(predicate: #Predicate { $0.isCurrent == true })
+                if let current = try? modelContext.fetch(descriptor).first {
+                    selectedMesocycleID = current.id
+                }
             }
             .tabItem { Label("Train", systemImage: "dumbbell") }
             .tag(AppTab.train)
@@ -41,6 +53,15 @@ struct ContentView: View {
             })
             .tabItem { Label("Mesocycles", systemImage: "chart.line.uptrend.xyaxis") }
             .tag(AppTab.mesocycles)
+            .onChange(of: selectedTab) { _, newTab in
+                // When returning to Train, ensure selected mesocycle still exists
+                guard newTab == .train else { return }
+                if let id = selectedMesocycleID {
+                    let descriptor = FetchDescriptor<Mesocycle>(predicate: #Predicate { $0.id == id })
+                    let exists = (try? modelContext.fetch(descriptor))?.first != nil
+                    if !exists { selectedMesocycleID = nil }
+                }
+            }
             
             // EXERCISES
             ExerciseView()
@@ -59,6 +80,7 @@ struct ContentView: View {
                 .tabItem { Label("Chat", systemImage: "bubble.left.and.bubble.right.fill") }
                 .tag(AppTab.chat)
         }
+        .tint(selectedAccentColor ?? MulticolorAccent.color(for: .navigation))
     }
     
     // MARK: - Catalog Seeding Helper
@@ -80,3 +102,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

@@ -4,7 +4,15 @@ import SwiftData
 @main
 struct LiftOSApp: App {
     let sharedModelContainer: ModelContainer = {
-           let schema = Schema([Exercise.self])
+           let schema = Schema([
+               Exercise.self,
+               ExerciseNote.self,
+               Mesocycle.self,
+               MesoDay.self,
+               MesoSelection.self,
+               MesoCompletion.self,
+               WorkoutLogEntry.self,
+           ])
            let config = ModelConfiguration(isStoredInMemoryOnly: false)
            do {
                return try ModelContainer(for: schema, configurations: config)
@@ -26,4 +34,10 @@ struct LiftOSApp: App {
                 }
         }
     }
+}
+
+
+
+#Preview("LiftOSApp") {
+    ContentView()
 }

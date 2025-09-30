@@ -1,15 +1,16 @@
 import SwiftUI
 
-struct ExerciseSetsSection: View {
+struct SetListView: View {
     let exercise: ExerciseItem
     let existingSets: [ExerciseSet]
     let weightUnit: WeightUnit
     let lastReps: [Int: Int]
+    let hasBaseline: Bool
 
-    let onAddSet: () -> Void
-    let onSkipSet: (_ index: Int) -> Void
-    let onDeleteSet: (_ index: Int) -> Void
-    let onCommitInline: (_ index: Int, _ weight: Double?, _ reps: Int?, _ checked: Bool) -> Void
+    var onAddSet: () -> Void
+    var onSkipSet: (_ index: Int) -> Void
+    var onDeleteSet: (_ index: Int) -> Void
+    var onCommitInline: (_ index: Int, _ weight: Double?, _ reps: Int?, _ checked: Bool) -> Void
 
     var focusedField: FocusState<SessionField?>.Binding
 
@@ -17,16 +18,15 @@ struct ExerciseSetsSection: View {
         existingSets.first(where: { $0.index == index })
     }
 
-    @ViewBuilder
     private func row(for idx: Int) -> some View {
         let existing = existingSet(for: idx)
         let previousWeight: Double? = existingSets
             .filter { $0.index < idx }
             .compactMap { $0.weight }
             .last
-        let suggestedWeight: Double? = exercise.suggestedNextWeight
+        let suggestedWeight: Double? = hasBaseline ? exercise.suggestedNextWeight : nil
 
-        InlineSetRow(
+        return InlineSetRow(
             exerciseID: exercise.id,
             index: idx,
             totalSets: exercise.targetSets,
@@ -77,12 +77,15 @@ struct ExerciseSetsSection: View {
             .accessibilityLabel("Add set")
         } header: {
             VStack(alignment: .leading, spacing: 4) {
-                Text(exercise.name)
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text(exercise.name)
+                    if let t = exercise.typeLabel, !t.isEmpty {
+                        Text("(") + Text(t).foregroundStyle(.secondary) + Text(")")
+                    }
+                }
+                .font(.headline)
 
-                // Visible hint: prefer logged data when available, otherwise show next suggestion
                 HStack(spacing: 8) {
-                    // Find the highest indexed logged set to represent the "last" set
                     let lastLogged = existingSets.max(by: { $0.index < $1.index })
                     if let lw = lastLogged?.weight, (lastLogged?.reps != nil || lw > 0) {
                         if let reps = lastLogged?.reps {
@@ -94,10 +97,6 @@ struct ExerciseSetsSection: View {
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
-                    } else if let suggested = exercise.suggestedNextWeight {
-                        Text("Next: \(formatWeight(suggested))")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
                     }
                 }
 
@@ -118,3 +117,29 @@ struct ExerciseSetsSection: View {
         return unit == .kg ? "\(rounded) kg" : "\(rounded) lb"
     }
 }
+
+private struct SetListView_PreviewContainer: View {
+    @FocusState private var focusedField: SessionField?
+
+    var body: some View {
+        List {
+            SetListView(
+                exercise: ExerciseItem(name: "Bench Press", targetSets: 3, rirTarget: 2),
+                existingSets: [],
+                weightUnit: .lb,
+                lastReps: [:],
+                hasBaseline: false,
+                onAddSet: {},
+                onSkipSet: { _ in },
+                onDeleteSet: { _ in },
+                onCommitInline: { _,_,_,_ in },
+                focusedField: $focusedField
+            )
+        }
+    }
+}
+
+#Preview {
+    SetListView_PreviewContainer()
+}
+

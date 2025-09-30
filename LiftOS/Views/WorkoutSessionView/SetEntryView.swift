@@ -21,6 +21,20 @@ struct SetEntryView: View { /* moved under WorkoutSessionView feature in case us
             }
             .navigationTitle("Set Entry")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { onCancel(); dismiss() } }; ToolbarItem(placement: .confirmationAction) { Button("Save") { var result = initial; result.weight = Double(weightText.replacingOccurrences(of: ",", with: ".")); result.reps = Int(repsText); result.rir = Int(rirText); result.done = true; onSave(result, Int(restSeconds)); dismiss() }.disabled(Int(repsText) == nil) } }
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        dismissKeyboard()
+                    }
+                }
+            }
         }
+    }
+    
+    private func dismissKeyboard() {
+        #if canImport(UIKit)
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        #endif
     }
 }
