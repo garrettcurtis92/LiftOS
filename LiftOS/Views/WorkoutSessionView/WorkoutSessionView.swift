@@ -381,10 +381,14 @@ struct WorkoutSessionView: View {
         }
         .sheet(isPresented: $showTimerSheet) {
             TimerPresetSheet(
-                presets: [30, 60, 90, 120],
+                presets: [0, 30, 60, 90, 120],
                 currentTimer: restRemaining,
                 onSelect: { seconds in
-                    startRestCountdown(seconds: seconds)
+                    if seconds > 0 {
+                        startRestCountdown(seconds: seconds)
+                    } else {
+                        cancelRestCountdown()
+                    }
                     showTimerSheet = false
                 },
                 onStop: {
@@ -549,20 +553,20 @@ struct WorkoutSessionView: View {
         restRemaining = seconds
         showRestTimer = false
 
-        var timer: Timer? = nil
         let newTimer = Timer(timeInterval: 1.0, repeats: true) { _ in
-            if UIAccessibility.isReduceMotionEnabled {
-                // No tick animations, just decrement
-            }
-            // Ensure state updates happen on the main thread
-            restRemaining -= 1
-            if restRemaining <= 0 {
-                timer?.invalidate()
-                restRemaining = 0
-                restTimerEndTrigger += 1
+            Task { @MainActor in
+                if UIAccessibility.isReduceMotionEnabled {
+                    // No tick animations, just decrement
+                }
+                self.restRemaining -= 1
+                if self.restRemaining <= 0 {
+                    self.restTimer?.invalidate()
+                    self.restTimer = nil
+                    self.restRemaining = 0
+                    self.restTimerEndTrigger += 1
+                }
             }
         }
-        timer = newTimer
         RunLoop.main.add(newTimer, forMode: .common)
         restTimer = newTimer
     }

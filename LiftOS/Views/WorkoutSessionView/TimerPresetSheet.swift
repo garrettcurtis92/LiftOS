@@ -16,7 +16,9 @@ struct TimerPresetSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     private func formatTime(_ seconds: Int) -> String {
-        if seconds >= 60 {
+        if seconds == 0 {
+            return "No Timer"
+        } else if seconds >= 60 {
             let minutes = seconds / 60
             let remainingSeconds = seconds % 60
             if remainingSeconds == 0 {
@@ -128,9 +130,15 @@ struct TimerPresetSheet: View {
             }
             
             HStack {
-                Text(restTimerDuration == seconds ? "Auto-Start Default" : "Start Timer")
-                    .font(FitnessDS.Typography.captionMedium)
-                    .foregroundStyle(.secondary)
+                if seconds == 0 {
+                    Text(restTimerDuration == seconds ? "Auto-Start Default" : "No Auto-Timer")
+                        .font(FitnessDS.Typography.captionMedium)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(restTimerDuration == seconds ? "Auto-Start Default" : "Start Timer")
+                        .font(FitnessDS.Typography.captionMedium)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
             }
         }
@@ -148,7 +156,7 @@ struct TimerPresetSheet: View {
             onSelect(seconds)
             dismiss()
         }
-        .accessibilityLabel("Start \(formatTime(seconds)) timer")
+        .accessibilityLabel(seconds == 0 ? "No timer" : "Start \(formatTime(seconds)) timer")
         .accessibilityHint(restTimerDuration == seconds ? "This is your auto-start default" : "Tap star to set as auto-start default")
     }
 }
