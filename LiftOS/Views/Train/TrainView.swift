@@ -77,7 +77,7 @@ struct TrainView: View {
             }
         }
         .navigationTitle(activeMesoName ?? "Train")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .task(id: mesocycleID) {
             // Sync schedule prefs with selected mesocycle
             guard let id = mesocycleID else { return }

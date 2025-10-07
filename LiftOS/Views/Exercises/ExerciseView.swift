@@ -4,104 +4,83 @@ import SwiftData
 
 struct ExerciseView: View {
     @Environment(\.modelContext) private var modelContext
-    // Create the store on demand using the current modelContext
     private var store: ExerciseStore { ExerciseStore(modelContext: modelContext) }
+    
     @State private var customs: [Exercise] = []
+    @State private var searchQuery = ""
     @State private var showAddSheet = false
+    @State private var showFiltersSheet = false
     @State private var errorMessage: String?
     @State private var selectedExercise: Exercise?
     @State private var showEditSheet = false
     @State private var showNoteSheet = false
     @State private var selectedMuscleGroup: Exercise.MuscleGroup? = nil
     @State private var selectedType: Exercise.ExerciseType? = nil
-
     @State private var pendingDelete: Exercise? = nil
 
-    private var filteredCustoms: [Exercise] {
-        customs.filter { ex in
-            // Break into simple checks to help the type-checker
-            if let mg = selectedMuscleGroup, ex.muscleGroup != mg { return false }
-            if let t = selectedType, ex.type != t { return false }
-            return true
+    private var filteredExercises: [Exercise] {
+        var result = customs
+        
+        // Apply muscle group filter
+        if let mg = selectedMuscleGroup {
+            result = result.filter { $0.muscleGroup == mg }
         }
+        
+        // Apply type filter
+        if let t = selectedType {
+            result = result.filter { $0.type == t }
+        }
+        
+        // Apply search query
+        if !searchQuery.isEmpty {
+            result = result.filter { exercise in
+                exercise.name.localizedCaseInsensitiveContains(searchQuery) ||
+                String(describing: exercise.muscleGroup).localizedCaseInsensitiveContains(searchQuery)
+            }
+        }
+        
+        return result
+    }
+    
+    private var hasActiveFilters: Bool {
+        selectedMuscleGroup != nil || selectedType != nil
     }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            Group {
                 if customs.isEmpty {
-                    if #available(iOS 17.0, *) {
-                        ContentUnavailableView(
-                            "No Custom Exercises",
-                            systemImage: "dumbbell",
-                            description: Text("Tap the + to add your first custom exercise.")
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    } else {
-                        VStack(spacing: 8) {
-                            Image(systemName: "dumbbell").font(.largeTitle)
-                            Text("No Custom Exercises").font(.headline)
-                            Text("Tap the + to add your first custom exercise.")
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    }
+                    ContentUnavailableView(
+                        "No Custom Exercises",
+                        systemImage: "dumbbell",
+                        description: Text("Tap the + to add your first custom exercise.")
+                    )
+                } else if filteredExercises.isEmpty {
+                    ContentUnavailableView.search
                 } else {
-                    // Chip row (shows when any filter is active)
-                    if selectedMuscleGroup != nil || selectedType != nil {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                if let mg = selectedMuscleGroup {
-                                    FilterChip(title: String(describing: mg).capitalized) {
-                                        selectedMuscleGroup = nil
-                                    }
-                                }
-                                if let t = selectedType {
-                                    FilterChip(title: readableType(t)) {
-                                        selectedType = nil
-                                    }
-                                }
-                                Button {
-                                    selectedMuscleGroup = nil
-                                    selectedType = nil
-                                } label: {
-                                    Label("Clear", systemImage: "xmark.circle")
-                                        .font(.footnote)
-                                }
-                                .buttonStyle(.borderless)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 6)
-                            .padding(.bottom, 4)
-                        }
-                    }
                     List {
-                        ForEach(filteredCustoms, id: \.persistentModelID) { ex in
-                            HStack(alignment: .firstTextBaseline) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(ex.name).font(.headline)
-                                    Text("\(String(describing: ex.muscleGroup)) • \(String(describing: ex.type))")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-
-                                    // Latest note preview (if any)
-                                    if let latest = try? store.latestNote(for: ex), !latest.text.isEmpty {
-                                        Text(latest.text)
-                                            .font(.footnote)
-                                            .lineLimit(1)
-                                            .foregroundStyle(.secondary)
-                                            .padding(.top, 2)
-                                            .accessibilityLabel("Latest note: \(latest.text)")
-                                    }
-                                }
-                                Spacer(minLength: 8)
-
+                        ForEach(filteredExercises, id: \.persistentModelID) { ex in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(ex.name)
+                                    .font(.headline)
                                 
+                                Text("\(String(describing: ex.muscleGroup)) • \(readableType(ex.type))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+
+                                // Latest note preview
+                                if let latest = try? store.latestNote(for: ex), !latest.text.isEmpty {
+                                    Text(latest.text)
+                                        .font(.footnote)
+                                        .lineLimit(1)
+                                        .foregroundStyle(.secondary)
+                                        .padding(.top, 2)
+                                        .accessibilityLabel("Latest note: \(latest.text)")
+                                }
                             }
-                            // Fast gesture: swipe right-to-left
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
-                                    pendingDelete = ex    // ask for confirmation
+                                    pendingDelete = ex
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -116,7 +95,6 @@ struct ExerciseView: View {
                                     showNoteSheet = true
                                 } label: { Label("Note", systemImage: "note.text") }
                             }
-                            // Discoverable via long-press
                             .contextMenu {
                                 Button {
                                     selectedExercise = ex
@@ -137,59 +115,94 @@ struct ExerciseView: View {
                                 }
                             }
                         }
-                        .onDelete { indexSet in
-                            if let idx = indexSet.first, idx < filteredCustoms.count {
-                                pendingDelete = filteredCustoms[idx]
-                            }
-                        }
                     }
                     .listStyle(.insetGrouped)
                 }
             }
             .navigationTitle("Exercises")
+            .navigationBarTitleDisplayMode(.large)
+            .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always))
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        // MUSCLE GROUP
-                        Menu("Muscle Group") {
-                            Button("All") { selectedMuscleGroup = nil }
-                            ForEach(Exercise.MuscleGroup.allCases, id: \.self) { mg in
-                                Button(String(describing: mg).capitalized) { selectedMuscleGroup = mg }
-                            }
-                        }
-                        // EXERCISE TYPE
-                        Menu("Exercise Type") {
-                            Button("All") { selectedType = nil }
-                            ForEach(Exercise.ExerciseType.allCases, id: \.self) { t in
-                                Button(readableType(t)) { selectedType = t }
-                            }
-                        }
-                        // CLEAR
-                        if selectedMuscleGroup != nil || selectedType != nil {
-                            Divider()
-                            Button("Clear Filters", role: .none) {
-                                selectedMuscleGroup = nil
-                                selectedType = nil
-                            }
-                        }
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        showFiltersSheet = true
                     } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
+                        Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     }
                     .accessibilityLabel("Filter")
-                }
-
-                // Keep existing + button
-                ToolbarItem(placement: .topBarTrailing) {
+                    
                     Button {
                         showAddSheet = true
                     } label: {
-                        Image(systemName: "plus.circle.fill")
+                        Image(systemName: "plus")
                     }
                     .accessibilityLabel("Add Exercise")
                 }
             }
             .task {
                 try? reload()
+            }
+            .sheet(isPresented: $showFiltersSheet) {
+                NavigationStack {
+                    Form {
+                        Section("Muscle Group") {
+                            Button("All") {
+                                selectedMuscleGroup = nil
+                            }
+                            ForEach(Exercise.MuscleGroup.allCases, id: \.self) { mg in
+                                Button {
+                                    selectedMuscleGroup = mg
+                                } label: {
+                                    HStack {
+                                        Text(String(describing: mg).capitalized)
+                                        Spacer()
+                                        if selectedMuscleGroup == mg {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Section("Exercise Type") {
+                            Button("All") {
+                                selectedType = nil
+                            }
+                            ForEach(Exercise.ExerciseType.allCases, id: \.self) { type in
+                                Button {
+                                    selectedType = type
+                                } label: {
+                                    HStack {
+                                        Text(readableType(type))
+                                        Spacer()
+                                        if selectedType == type {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if hasActiveFilters {
+                            Section {
+                                Button("Clear All Filters") {
+                                    selectedMuscleGroup = nil
+                                    selectedType = nil
+                                    showFiltersSheet = false
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Filters")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") {
+                                showFiltersSheet = false
+                            }
+                        }
+                    }
+                }
             }
             .sheet(isPresented: $showAddSheet) {
                 AddExerciseView { name, mg, type, yt in

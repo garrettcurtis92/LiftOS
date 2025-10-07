@@ -65,7 +65,7 @@ struct MesoScratchBuilderView: View {
                 .background(.clear)
             } else {
                 List {
-                    Section("Muscle groups") {
+                    Section {
                         ForEach(Array(days[selectedDayIx].enumerated()), id: \.offset) { (idx, group) in
                             Button {
                                 activeGroupForExercises = group
@@ -74,6 +74,7 @@ struct MesoScratchBuilderView: View {
                                 HStack(alignment: .firstTextBaseline) {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Label(group.title, systemImage: group.symbol)
+                                            .font(.body)
                                         if let name = exercisesByDay[selectedDayIx]?[idx]?.first?.name {
                                             Text(name)
                                                 .font(.footnote)
@@ -106,9 +107,14 @@ struct MesoScratchBuilderView: View {
                                 exercisesByDay[selectedDayIx] = updated
                             }
                         }
+                    } header: {
+                        Text("Muscle groups")
+                            .font(.headline)
                     }
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .background(DS.groupBg)
             }
         }
         .navigationTitle("New meso plan")
@@ -196,17 +202,12 @@ struct MesoScratchBuilderView: View {
             snapshot.append(MesoDayTemplate(dayIx: dayIx, exercises: templates))
         }
 
-        // Demote any existing current mesocycles so only one is current
-        if let currents = try? modelContext.fetch(FetchDescriptor<Mesocycle>(predicate: #Predicate { $0.isCurrent == true })) {
-            for m in currents { m.isCurrent = false }
-        }
-
         let finalName = name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "New Mesocycle" : name.trimmingCharacters(in: .whitespacesAndNewlines)
         let meso = Mesocycle(
             name: finalName,
             weekCount: weekCount,
             daysPerWeek: daysPerWeek,
-            isCurrent: true,
+            status: .current,
             startDate: Date(),
             labelStyle: .fixedWeekdays
         )
@@ -228,6 +229,7 @@ struct MesoScratchBuilderView: View {
         }
 
         modelContext.insert(meso)
+        MesocycleStore.setCurrent(meso, in: modelContext)
         try? modelContext.save()
     }
 }

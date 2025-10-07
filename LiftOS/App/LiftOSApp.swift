@@ -26,6 +26,7 @@ struct LiftOSApp: App {
         WindowGroup {
             ContentView() // Temp entry for this focused work
                 .modelContainer(sharedModelContainer)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility5) // Full Dynamic Type & accessibility support
                 .task {
                     // Seed on first launch
                     let context = sharedModelContainer.mainContext

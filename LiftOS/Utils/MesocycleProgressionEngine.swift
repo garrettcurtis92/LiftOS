@@ -86,8 +86,22 @@ enum MesocycleProgressionEngine {
     private struct SessionKey: Hashable { let week: Int; let day: Int }
 
     static func classifyKind(from name: String) -> ProgressionKind {
+        let normalized = ExerciseKey.normalize(name)
+        
+        // First, check the progression catalog
+        if let rule = EngineProgressionCatalog.shared.rule(for: normalized) {
+            switch rule.progression {
+            case .weight:
+                return .compound
+            case .reps:
+                return .isolation
+            case .unknown:
+                break // Fall through to heuristics
+            }
+        }
+        
+        // Fallback to heuristics if no rule found
         let lower = name.lowercased()
-        // Heuristics – tweak anytime or replace with a real field later
         let compoundKeys = [
             "squat","deadlift","bench","overhead","ohp","row","press","pull-up","pulldown","dip","hip thrust","rdl",
             "barbell","front squat","incline bench","pendlay","pullup","chin-up","chinup"
@@ -439,7 +453,15 @@ enum MesocycleProgressionEngine {
                 // Success: progress load, reset miss streak
                 missStreak = 0
                 lastAction = .progress
-                let step = (equipType.machineFineSteps ? weightUnit.fineStep : weightUnit.coarseStep)
+                
+                // Use the catalog's weightIncrement if available, otherwise use equipment-based defaults
+                let step: Double
+                if let catalogIncrement = context.rule?.weightIncrement {
+                    step = catalogIncrement
+                } else {
+                    step = (equipType.machineFineSteps ? weightUnit.fineStep : weightUnit.coarseStep)
+                }
+                
                 let rawNext = applyDirection(base: lastW, delta: step, direction: context.progressDirection, regress: false)
                 var roundedNext = LoadRounding.rounded(rawNext, unit: weightUnit, equip: equipType)
                 // Ensure we don't round back to the same number; if so, bump one more step in the same direction

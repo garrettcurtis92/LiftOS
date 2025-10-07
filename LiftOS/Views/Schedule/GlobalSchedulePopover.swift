@@ -28,7 +28,7 @@ struct GlobalSchedulePopover: View {
     // Adaptive layout: columns match the configured workouts per week
     private var dayColumns: [GridItem] {
         let count = max(activeMesocycle?.daysPerWeek ?? daysPerWeek, 1)
-        return Array(repeating: GridItem(.flexible(minimum: 44), spacing: DS.Space.sm.rawValue, alignment: .center), count: count)
+        return Array(repeating: GridItem(.flexible(minimum: 44), spacing: FitnessDS.Space.sm.rawValue, alignment: .center), count: count)
     }
     
     private var totalWeeksToShow: Int {
@@ -200,33 +200,48 @@ struct GlobalSchedulePopover: View {
 
     @ViewBuilder
     private func exerciseSection(key: String, displayName: String, entries: [WorkoutLogEntry]) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: FitnessDS.Space.md.rawValue) {
             headerRow(for: key, displayName: displayName, entries: entries)
-            ForEach(entries) { e in
-                entryRow(e)
-                    .padding(.vertical, 2)
+            
+            VStack(spacing: FitnessDS.Space.xs.rawValue) {
+                ForEach(entries) { e in
+                    entryRow(e)
+                }
             }
         }
-        .padding(12)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.secondary.opacity(0.12), lineWidth: 1)
+        .padding(FitnessDS.Space.lg.rawValue)
+        .background(
+            RoundedRectangle(cornerRadius: FitnessDS.Corners.card)
+                .fill(.ultraThinMaterial)
         )
-        .padding(.vertical, 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: FitnessDS.Corners.card)
+                .stroke(.separator.opacity(0.3), lineWidth: 1)
+        )
+        .fitnessShadow(FitnessDS.Shadows.cardShadow)
+        .padding(.vertical, FitnessDS.Space.xs.rawValue)
     }
 
     @ViewBuilder
     private func headerRow(for key: String, displayName: String, entries: [WorkoutLogEntry]) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: iconNameFor(key)).foregroundStyle(.secondary)
+        HStack(spacing: FitnessDS.Space.md.rawValue) {
+            // Exercise type icon with color coding
+            Image(systemName: iconNameFor(key))
+                .font(.title3)
+                .foregroundStyle(FitnessDS.FitnessTint.forKey(key))
+                .frame(width: 32, height: 32)
+                .background(FitnessDS.FitnessTint.forKey(key).opacity(0.15), in: Circle())
+            
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayName)
-                    .font(TypeScale.subheadline(.semibold))
+                    .font(FitnessDS.Typography.headlineSmall)
+                    .foregroundStyle(.primary)
+                
                 if let top = heaviest(entries) {
                     Text("Heaviest: \(formatWeight(top.weight, unit: top.unit)) × \(top.reps)")
-                        .font(.caption2)
+                        .font(FitnessDS.Typography.captionMedium)
                         .foregroundStyle(.secondary)
+                        .numericTextTransitionIfAvailable()
                 }
             }
             Spacer()
@@ -235,23 +250,49 @@ struct GlobalSchedulePopover: View {
 
     @ViewBuilder
     private func entryRow(_ e: WorkoutLogEntry) -> some View {
-        HStack {
-            Text("Set \(e.setIndex)")
+        HStack(spacing: FitnessDS.Space.md.rawValue) {
+            // Set number indicator
+            Text("\(e.setIndex)")
+                .font(FitnessDS.Typography.captionLarge)
+                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+                .frame(width: 20, height: 20)
+                .background(.thinMaterial, in: Circle())
+            
             Spacer()
+            
+            // Weight and reps display
             if let w = e.weight, let r = e.reps {
-                Text("\(formatWeight(w, unit: e.unit)) × \(r)")
-                    .font(.callout.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                HStack(spacing: FitnessDS.Space.xs.rawValue) {
+                    Text(formatWeight(w, unit: e.unit))
+                        .font(FitnessDS.Typography.numericSmall)
+                        .foregroundStyle(.primary)
+                    
+                    Text("×")
+                        .font(FitnessDS.Typography.captionMedium)
+                        .foregroundStyle(.tertiary)
+                    
+                    Text("\(r)")
+                        .font(FitnessDS.Typography.numericSmall)
+                        .foregroundStyle(.primary)
+                }
+                .padding(.horizontal, FitnessDS.Space.sm.rawValue)
+                .padding(.vertical, FitnessDS.Space.xs.rawValue)
+                .background(.thinMaterial, in: Capsule())
             } else if e.done && e.weight == nil && e.reps == nil {
                 Text("Skipped")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(FitnessDS.Typography.captionMedium)
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, FitnessDS.Space.sm.rawValue)
+                    .padding(.vertical, FitnessDS.Space.xs.rawValue)
+                    .background(.orange.opacity(0.15), in: Capsule())
             } else {
                 Text("—")
-                    .font(.callout)
+                    .font(FitnessDS.Typography.captionMedium)
                     .foregroundStyle(.tertiary)
             }
         }
+        .padding(.vertical, FitnessDS.Space.xs.rawValue)
     }
 
     private func plannedOrder(for dayIx: Int) -> (orderedKeys: [String], displayNameByKey: [String: String]) {
@@ -318,14 +359,14 @@ struct GlobalSchedulePopover: View {
 
     @ViewBuilder
     private func entriesSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Space.sm.rawValue) {
+        VStack(alignment: .leading, spacing: FitnessDS.Space.sm.rawValue) {
             HStack {
                 Text("Entries")
-                    .font(TypeScale.headline())
+                    .font(FitnessDS.Typography.headlineMedium)
                 Spacer()
                 if let ts = lastUpdatedAt {
                     Text(ts, style: .time)
-                        .font(.footnote)
+                        .font(FitnessDS.Typography.captionMedium)
                         .foregroundStyle(.secondary)
                         .accessibilityLabel("Last updated")
                 }
@@ -344,45 +385,60 @@ struct GlobalSchedulePopover: View {
 
     @ViewBuilder
     private func mainContent() -> some View {
-        VStack(spacing: DS.Space.md.rawValue) {
+        VStack(spacing: FitnessDS.Space.md.rawValue) {
             headerPickerView()
-                .padding(.horizontal, DS.Space.lg.rawValue)
-                .padding(.top, DS.Space.sm.rawValue)
+                .padding(.horizontal, FitnessDS.Space.lg.rawValue)
+                .padding(.top, FitnessDS.Space.sm.rawValue)
 
             weeksGrid()
-                .padding(.horizontal, DS.Space.lg.rawValue)
+                .padding(.horizontal, FitnessDS.Space.lg.rawValue)
 
             entriesSection()
-                .padding(.horizontal, DS.Space.lg.rawValue)
-                .padding(.bottom, DS.Space.lg.rawValue)
+                .padding(.horizontal, FitnessDS.Space.lg.rawValue)
+                .padding(.bottom, FitnessDS.Space.lg.rawValue)
         }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DS.Space.md.rawValue) {
-            Text("Schedule").font(TypeScale.title()).padding(.horizontal, DS.Space.lg.rawValue).padding(.top, DS.Space.lg.rawValue)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            VStack(alignment: .leading, spacing: FitnessDS.Space.sm.rawValue) {
+                Text("Schedule")
+                    .font(FitnessDS.Typography.displayLarge)
+                    .foregroundStyle(.primary)
+                
+                if let lastUpdated = lastUpdatedAt {
+                    Text("Last updated \(lastUpdated.formatted(.relative(presentation: .named)))")
+                        .font(FitnessDS.Typography.captionMedium)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, FitnessDS.Space.lg.rawValue)
+            .padding(.top, FitnessDS.Space.lg.rawValue)
+            .padding(.bottom, FitnessDS.Space.md.rawValue)
 
-            // Full mesocycle grid: totalWeeks rows x 7 days
+            // Full mesocycle grid: totalWeeks rows x days
             ScrollView {
                 mainContent()
-                    .padding(.top, DS.Space.md.rawValue)
+                    .padding(.top, FitnessDS.Space.sm.rawValue)
             }
 
+            // Footer with done button
             HStack {
                 Spacer()
                 PrimaryButton(title: "Done", systemIcon: "checkmark.circle.fill", style: .success) {
                     dismiss()
                 }
-                .padding(.horizontal, DS.Space.lg.rawValue)
-                .padding(.bottom, DS.Space.lg.rawValue)
+                .padding(.horizontal, FitnessDS.Space.lg.rawValue)
+                .padding(.bottom, FitnessDS.Space.lg.rawValue)
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: FitnessDS.Corners.large, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
+        .clipShape(RoundedRectangle(cornerRadius: FitnessDS.Corners.large, style: .continuous))
+        .fitnessShadow(FitnessDS.Shadows.cardShadow)
         .alert("Switch to Week \(pendingSelection?.week ?? 1)?", isPresented: $showWeekSwitchAlert) {
             Button("Cancel", role: .cancel) { pendingSelection = nil }
             Button("Switch") { if let p = pendingSelection { currentWeek = p.week; currentDayIx = p.dayIx }; pendingSelection = nil; dismiss() }

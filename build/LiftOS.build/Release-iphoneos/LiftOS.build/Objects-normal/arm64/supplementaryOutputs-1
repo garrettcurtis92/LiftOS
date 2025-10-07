@@ -1,0 +1,12 @@
+{
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/App/ContentView.swift" : {
+    "abi-baseline-json" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS.abi.json",
+    "const-values" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary.swiftconstvalues",
+    "dependencies" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary.d",
+    "diagnostics" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary.dia",
+    "objc-header" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-Swift.h",
+    "swiftdoc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS.swiftdoc",
+    "swiftmodule" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS.swiftmodule",
+    "swiftsourceinfo" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS.swiftsourceinfo"
+  }
+}

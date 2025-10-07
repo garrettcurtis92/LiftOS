@@ -43,15 +43,6 @@ struct SetListView: View {
             onDelete: { onDeleteSet(idx) }
         )
         .id("\(exercise.id)-\(idx)-\(existingSets.count)")
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button { onSkipSet(idx) } label: {
-                Label("Skip", systemImage: "forward.end")
-            }
-            Button(role: .destructive) { onDeleteSet(idx) } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-        .accessibilityHint("Swipe for skip or delete")
     }
 
     var body: some View {

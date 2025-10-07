@@ -29,6 +29,12 @@ struct ChatWindowView: View {
                             sendMessage()
                             inputFocused = false
                         }
+                        .onAppear {
+                            // Auto-focus when sheet appears
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                inputFocused = true
+                            }
+                        }
                     Button {
                         sendMessage()
                         inputFocused = false

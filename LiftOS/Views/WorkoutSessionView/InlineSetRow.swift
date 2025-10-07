@@ -27,9 +27,15 @@ struct InlineSetRow: View {
     @State private var isProvisional: Bool = false
     @State private var suppressProvisionalFlip: Bool = false
     @State private var userHasEdited: Bool = false
+    
+    // Sensory feedback triggers
+    @State private var setCompleteTrigger = 0
+    @State private var fieldFocusTrigger = 0
+    @State private var missingFieldsTrigger = 0
 
     @AppStorage("provisionalWeightDim") private var provisionalWeightDim: Bool = true
     @AppStorage("hapticsEnabled") private var hapticsEnabled: Bool = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum RowState { case pending, active, done }
     private var isFocused: Bool {
@@ -76,12 +82,14 @@ struct InlineSetRow: View {
         self.onSkip = onSkip
         self.onDelete = onDelete
 
+        // Priority: existing logged weight > previous set weight > suggested weight from prior sessions
         let initialWeight = existing?.weight.map { Self.formatWeightText($0) } ??
-                            (suggestedWeight.map { Self.formatWeightText($0) } ?? "")
+                            (previousWeight.map { Self.formatWeightText($0) } ??
+                            (suggestedWeight.map { Self.formatWeightText($0) } ?? ""))
         _weightText = State(initialValue: initialWeight)
         _repsText   = State(initialValue: existing?.reps.map(String.init) ?? "")
         _checked    = State(initialValue: existing?.done ?? false)
-        _isProvisional = State(initialValue: existing?.weight == nil && suggestedWeight != nil)
+        _isProvisional = State(initialValue: existing?.weight == nil && (previousWeight != nil || suggestedWeight != nil))
     }
 
     private var nudgeStep: Double {
@@ -104,95 +112,118 @@ struct InlineSetRow: View {
         if let r = lastReps { return String(r) }
         return "\(rirTarget) RIR"
     }
+    
+    private let corner: CGFloat = 12
+    
+    private var rowContent: some View {
+        DSCard {
+            HStack(spacing: FitnessDS.Space.md.rawValue) {
+                // Set number indicator
+                Text("\(index)")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(width: 28, height: 28)
+                    .background(.thickMaterial, in: Circle())
+                    .overlay(Circle().stroke(DS.sep))
+                
+                weightInputSection
+                repsInputField
+                Spacer()
+                completionToggle
+            }
+            .frame(maxHeight: 52)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(accessibilityRowLabel))
+        .accessibilityHint(Text("Edit weight and reps, then mark complete."))
+    }
 
     var body: some View {
-        HStack(spacing: DS.Space.sm.rawValue) {
-            // Leading progress pip
-            Circle()
-                .fill(pipColor)
-                .frame(width: 10, height: 10)
-                .scaleEffect(rowState == .active ? 1.15 : 1.0)
-                .animation(UIAccessibility.isReduceMotionEnabled ? .linear(duration: 0.01) : .snappy(duration: 0.2), value: rowState)
-
-            HStack(spacing: 8) {
-                TextField(weightUnit.display, text: $weightText)
-                    .keyboardType(.decimalPad)
-                    .font(.body.monospacedDigit())
-                    .numericTextTransitionIfAvailable()
-                    .foregroundStyle(isProvisional && provisionalWeightDim ? .secondary : .primary)
-                    .multilineTextAlignment(.leading)
-                    .focused(focusedField, equals: .weight(exerciseID, index))
-                    .submitLabel(.next)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .padding(.leading, 12)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.red.opacity(missingFlashWeight ? 0.9 : 0), lineWidth: 1))
-                    .accessibilityLabel("Set \(index), weight entry")
-                    .accessibilityHint("Enter weight then reps. Double tap to mark set completed.")
-
-                Button { nudgeWeight(-nudgeStep) } label: { Image(systemName: "minus.circle") }
-                    .buttonStyle(.plain)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .contentShape(Rectangle())
-                    .accessibilityLabel("Decrease weight")
-                Button { nudgeWeight(+nudgeStep) } label: { Image(systemName: "plus.circle") }
-                    .buttonStyle(.plain)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .contentShape(Rectangle())
-                    .accessibilityLabel("Increase weight")
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
+        rowContent
+            .sensoryFeedback(.success, trigger: setCompleteTrigger)
+            .sensoryFeedback(.selection, trigger: fieldFocusTrigger)
+            .sensoryFeedback(.warning, trigger: missingFieldsTrigger)
             .onTapGesture {
-                focusedField.wrappedValue = .weight(exerciseID, index)
-            }
-
-            TextField(repsPlaceholder, text: $repsText)
-                .keyboardType(.numberPad)
-                .font(.body.monospacedDigit())
-                .numericTextTransitionIfAvailable()
-                .multilineTextAlignment(.center)
-                .focused(focusedField, equals: .reps(exerciseID, index))
-                .submitLabel(index < totalSets ? .next : .done)
-                .frame(maxWidth: .infinity, minHeight: 44)
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.red.opacity(missingFlashReps ? 0.9 : 0), lineWidth: 1))
-                .accessibilityLabel("Repetitions")
-                .accessibilityHint("Target \(rirTarget) R I R")
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    focusedField.wrappedValue = .reps(exerciseID, index)
-                }
-
-            Button {
-                if weightText.isEmpty || repsText.isEmpty {
-                    indicateMissingFields()
-                    checked = false
-                } else {
-                    checked.toggle()
-                    if checked {
-                        if hapticsEnabled { Haptics.success() }
-                        commit()
+                if focusedField.wrappedValue == nil {
+                    if weightText.isEmpty {
+                        focusedField.wrappedValue = .weight(exerciseID, index)
                     } else {
-                        commitSoft()
+                        focusedField.wrappedValue = .reps(exerciseID, index)
                     }
                 }
-            } label: {
-                Image(systemName: checked ? "checkmark.circle.fill" : "circle")
-                    .imageScale(.large)
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(checked ? Color.green : .secondary)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .background(.thinMaterial, in: Circle())
             }
-            .buttonStyle(.plain)
-            .if(!UIAccessibility.isReduceMotionEnabled) { view in
-                view.symbolEffect(.bounce, value: checked)
+            .onSubmit {
+                let current = focusedField.wrappedValue
+                let next = nextField(after: current)
+                focusedField.wrappedValue = next
+                if case .reps(exerciseID, _) = current {
+                    if !weightText.isEmpty, !repsText.isEmpty {
+                        checked = true
+                        setCompleteTrigger += 1
+                        commit()
+                    }
+                }
             }
-            .accessibilityLabel(checked ? "Set complete" : "Mark set complete")
-            .accessibilityHint((weightText.isEmpty || repsText.isEmpty) ? "Enter weight and reps to complete" : "Double tap to toggle")
-            .contentShape(Rectangle())
-            .frame(maxWidth: .infinity, alignment: .trailing)
-        }
-        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            .onChange(of: suggestedWeight) { oldValue, newValue in
+                if PrefillPolicy.shouldPrefill(weightIsEmpty: weightText.isEmpty, userHasEdited: userHasEdited),
+                   let hint = newValue {
+                    isProvisional = true
+                    suppressProvisionalFlip = true
+                    weightText = Self.formatWeightText(hint)
+                    commitSoft()
+                }
+            }
+            .onChange(of: previousWeight) { oldValue, newValue in
+                // When a previous set in the same session is logged, prefill this set
+                if PrefillPolicy.shouldPrefill(weightIsEmpty: weightText.isEmpty, userHasEdited: userHasEdited),
+                   let hint = newValue {
+                    isProvisional = true
+                    suppressProvisionalFlip = true
+                    weightText = Self.formatWeightText(hint)
+                    commitSoft()
+                }
+            }
+            .onChange(of: weightText) {
+                if suppressProvisionalFlip {
+                    suppressProvisionalFlip = false
+                    return
+                }
+                userHasEdited = true
+                if !weightText.isEmpty {
+                    isProvisional = false
+                }
+            }
+            .onChange(of: focusedField.wrappedValue) { oldValue, newValue in
+                let weightField = SessionField.weight(exerciseID, index)
+                let repsField = SessionField.reps(exerciseID, index)
+
+                let isWeightFocused = newValue == weightField
+                let wasWeightFocusedPreviously = oldValue == weightField
+
+                if wasWeightFocusedPreviously && !isWeightFocused && !weightText.isEmpty {
+                    commit()
+                }
+
+                let rowJustBecameFocused = (newValue == weightField || newValue == repsField) && oldValue != newValue
+                if rowJustBecameFocused {
+                    fieldFocusTrigger += 1
+                }
+            }
+            .contextMenu {
+                Button {
+                    print("🗑️ Delete from context menu for set \(index)")
+                    onDelete()
+                } label: {
+                    Label("Delete Set", systemImage: "trash")
+                }
+                
+                Button {
+                    print("⏭️ Skip from context menu for set \(index)")
+                    onSkip()
+                } label: {
+                    Label("Skip Set", systemImage: "minus.circle")
+                }
+            }
+            .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if checked {
                 Button {
                     checked = false
@@ -200,89 +231,201 @@ struct InlineSetRow: View {
                 } label: {
                     Label("Undo", systemImage: "arrow.uturn.left")
                 }
+                .tint(FitnessDS.FitnessTint.warning)
             } else {
                 Button {
                     if weightText.isEmpty || repsText.isEmpty {
                         indicateMissingFields()
                     } else {
                         checked = true
-                        if hapticsEnabled { Haptics.success() }
+                        setCompleteTrigger += 1
                         commit()
                     }
                 } label: {
                     Label("Mark Done", systemImage: "checkmark.circle.fill")
                 }
-                .tint(.green)
+                .tint(FitnessDS.FitnessTint.success)
             }
         }
-        .padding(.vertical, 12)
-        .contentShape(Rectangle())
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                print("🗑️ Delete button tapped for set \(index)")
+                onDelete()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+            .tint(.red)
+            
+            Button {
+                print("⏭️ Skip button tapped for set \(index)")
+                onSkip()
+            } label: {
+                Label("Skip", systemImage: "minus.circle")
+            }
+            .tint(.orange)
+        }
+    }
+
+    private var setIndicator: some View {
+        Text("\(index)")
+            .font(FitnessDS.Typography.captionLarge)
+            .fontWeight(.semibold)
+            .foregroundStyle(pipColor)
+            .frame(width: 24, height: 24)
+            .background(
+                Circle()
+                    .fill(pipColor.opacity(0.15))
+                    .allowsHitTesting(false)  // Decorative only
+                    .overlay(
+                        Circle()
+                            .stroke(pipColor.opacity(0.3), lineWidth: 1)
+                            .allowsHitTesting(false)  // Decorative only
+                    )
+            )
+            .scaleEffect(reduceMotion ? 1.0 : (rowState == .active ? 1.08 : 1.0))
+            .opacity(reduceMotion && rowState == .active ? 0.9 : 1.0)
+            .animation(reduceMotion ? .easeInOut(duration: 0.25) : .snappy(duration: 0.35, extraBounce: 0.25), value: rowState)
+            .accessibilityHidden(true)
+    }
+
+    private var weightInputSection: some View {
+        HStack(spacing: FitnessDS.Space.xs.rawValue) {
+            weightTextField
+            weightNudgeControls
+        }
         .onTapGesture {
-            if focusedField.wrappedValue == nil {
-                if weightText.isEmpty {
-                    focusedField.wrappedValue = .weight(exerciseID, index)
-                } else {
-                    focusedField.wrappedValue = .reps(exerciseID, index)
-                }
-            }
+            focusedField.wrappedValue = .weight(exerciseID, index)
         }
-        .onSubmit {
-            let current = focusedField.wrappedValue
-            let next = nextField(after: current)
-            focusedField.wrappedValue = next
-            if case .reps(exerciseID, _) = current {
-                if !weightText.isEmpty, !repsText.isEmpty {
-                    checked = true
-                    if hapticsEnabled { Haptics.success() }
-                    commit()
-                }
+    }
+
+    private var weightTextField: some View {
+        TextField(weightUnit.display, text: $weightText)
+            .keyboardType(.decimalPad)
+            .font(FitnessDS.Typography.numericMedium)
+            .monospacedDigit()
+            .numericTextTransitionIfAvailable()
+            .foregroundStyle(weightTextForegroundStyle)
+            .multilineTextAlignment(.center)
+            .focused(focusedField, equals: .weight(exerciseID, index))
+            .submitLabel(.next)
+            .frame(minWidth: 60, minHeight: 48)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: FitnessDS.Corners.small))
+            .overlay(
+                RoundedRectangle(cornerRadius: FitnessDS.Corners.small)
+                    .stroke(
+                        fieldBorderColor(isMissing: missingFlashWeight),
+                        lineWidth: fieldBorderWidth(isMissing: missingFlashWeight)
+                    )
+                    .allowsHitTesting(false)  // Decorative stroke only
+            )
+            .accessibilityLabel("Weight")
+            .accessibilityValue(weightText.isEmpty ? "Empty" : "\(weightText) \(weightUnit.display)")
+            .accessibilityHint("Enter weight for set \(index)")
+    }
+
+    private var weightNudgeControls: some View {
+        VStack(spacing: 2) {
+            Button { nudgeWeight(+nudgeStep) } label: {
+                Image(systemName: "plus")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
             }
+            .buttonStyle(.plain)
+            .frame(width: 28, height: 20)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 4))
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Increase weight")
+
+            Button { nudgeWeight(-nudgeStep) } label: {
+                Image(systemName: "minus")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 28, height: 20)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 4))
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Decrease weight")
         }
-        .onChange(of: suggestedWeight) { oldValue, newValue in
-            if PrefillPolicy.shouldPrefill(weightIsEmpty: weightText.isEmpty, userHasEdited: userHasEdited),
-               let hint = newValue {
-                isProvisional = true
-                suppressProvisionalFlip = true
-                weightText = Self.formatWeightText(hint)
-                commitSoft()
+    }
+
+    private var repsInputField: some View {
+        TextField(repsPlaceholder, text: $repsText)
+            .keyboardType(.numberPad)
+            .font(FitnessDS.Typography.numericMedium)
+            .monospacedDigit()
+            .numericTextTransitionIfAvailable()
+            .multilineTextAlignment(.center)
+            .focused(focusedField, equals: .reps(exerciseID, index))
+            .submitLabel(index < totalSets ? .next : .return)
+            .frame(minWidth: 60, minHeight: 48)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: FitnessDS.Corners.small))
+            .overlay(
+                RoundedRectangle(cornerRadius: FitnessDS.Corners.small)
+                    .stroke(
+                        fieldBorderColor(isMissing: missingFlashReps),
+                        lineWidth: fieldBorderWidth(isMissing: missingFlashReps)
+                    )
+                    .allowsHitTesting(false)  // Decorative stroke only
+            )
+            .accessibilityLabel("Repetitions")
+            .accessibilityValue(repsText.isEmpty ? "Empty" : "\(repsText) reps")
+            .accessibilityHint("Target \(rirTarget) RIR for set \(index)")
+            .onTapGesture {
+                focusedField.wrappedValue = .reps(exerciseID, index)
             }
-        }
-        .onChange(of: weightText) {
-            if suppressProvisionalFlip {
-                suppressProvisionalFlip = false
-                return
-            }
-            userHasEdited = true
-            if !weightText.isEmpty {
-                isProvisional = false
-            }
-        }
-        .onChange(of: focusedField.wrappedValue) {
-            let thisWeightField = SessionField.weight(exerciseID, index)
-            let isNowFocused = focusedField.wrappedValue == thisWeightField
-            if wasWeightFocused && !isNowFocused && !weightText.isEmpty {
-                commit()
-            }
-            wasWeightFocused = isNowFocused
-        }
-        .onChange(of: checked) { oldValue, newValue in
-            #if canImport(UIKit)
-            if newValue {
-                UIAccessibility.post(notification: .announcement, argument: "Set \(index) completed")
+    }
+
+    private var completionToggle: some View {
+        Button {
+            if weightText.isEmpty || repsText.isEmpty {
+                indicateMissingFields()
+                checked = false
             } else {
-                UIAccessibility.post(notification: .announcement, argument: "Set \(index) unmarked")
+                checked.toggle()
+                if checked {
+                    setCompleteTrigger += 1
+                    commit()
+                } else {
+                    commitSoft()
+                }
             }
-            #endif
+        } label: {
+            Image(systemName: checked ? "checkmark.circle.fill" : "circle")
+                .font(.title2)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(checked ? FitnessDS.FitnessTint.success : .secondary)
+                .frame(width: 48, height: 48)
+                .background(.thinMaterial, in: Circle())
+                .overlay(
+                    Circle()
+                        .stroke(
+                            checked ? FitnessDS.FitnessTint.success.opacity(0.3) : Color(.separator).opacity(0.2),
+                            lineWidth: 1
+                        )
+                        .allowsHitTesting(false)  // Decorative stroke only
+                )
         }
-        .onAppear {
-            if PrefillPolicy.shouldPrefill(weightIsEmpty: weightText.isEmpty, userHasEdited: userHasEdited),
-               let hint = suggestedWeight {
-                isProvisional = true
-                suppressProvisionalFlip = true
-                weightText = Self.formatWeightText(hint)
-                commitSoft()
-            }
+        .buttonStyle(.plain)
+        .if(!reduceMotion) { view in
+            view.symbolEffect(.bounce, value: checked)
         }
+        .accessibilityLabel(checked ? "Set complete" : "Mark set complete")
+        .accessibilityHint((weightText.isEmpty || repsText.isEmpty) ? "Enter weight and reps to complete" : "Double tap to toggle")
+    }
+
+    private var weightTextForegroundStyle: Color {
+        (isProvisional && provisionalWeightDim) ? .secondary : .primary
+    }
+
+    private func fieldBorderColor(isMissing: Bool) -> Color {
+        if isMissing { return .red }
+        if rowState == .active { return FitnessDS.FitnessTint.primary.opacity(0.5) }
+        return Color(.separator).opacity(0.3)
+    }
+
+    private func fieldBorderWidth(isMissing: Bool) -> CGFloat {
+        isMissing ? 2 : 1
     }
 
     private func nudgeWeight(_ delta: Double) {
@@ -307,23 +450,12 @@ struct InlineSetRow: View {
     }
 
     private func indicateMissingFields() {
-        #if canImport(UIKit)
-        if hapticsEnabled {
-            let gen = UINotificationFeedbackGenerator()
-            gen.notificationOccurred(.warning)
-        }
-        #endif
+        missingFieldsTrigger += 1
         if weightText.isEmpty {
-            withAnimation(.easeIn(duration: 0.12)) { missingFlashWeight = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                withAnimation(.easeOut(duration: 0.2)) { missingFlashWeight = false }
-            }
+            triggerMissingFlashWeight()
         }
         if repsText.isEmpty {
-            withAnimation(.easeIn(duration: 0.12)) { missingFlashReps = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                withAnimation(.easeOut(duration: 0.2)) { missingFlashReps = false }
-            }
+            triggerMissingFlashReps()
         }
     }
 
@@ -332,6 +464,68 @@ struct InlineSetRow: View {
     }
     private func commit() {
         onCommit(Double(weightText), Int(repsText), checked)
+    }
+
+    private func triggerMissingFlashWeight() {
+        if reduceMotion {
+            missingFlashWeight = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                missingFlashWeight = false
+            }
+        } else {
+            withAnimation(.easeIn(duration: 0.12)) { missingFlashWeight = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                withAnimation(.easeOut(duration: 0.2)) { missingFlashWeight = false }
+            }
+        }
+    }
+
+    private func triggerMissingFlashReps() {
+        if reduceMotion {
+            missingFlashReps = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                missingFlashReps = false
+            }
+        } else {
+            withAnimation(.easeIn(duration: 0.12)) { missingFlashReps = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                withAnimation(.easeOut(duration: 0.2)) { missingFlashReps = false }
+            }
+        }
+    }
+
+    private var accessibilityRowLabel: String {
+        let weightPart: String
+        if let enteredWeight = Double(weightText) {
+            weightPart = "Weight \(Self.formatWeightText(enteredWeight)) \(weightUnitSpeechLabel)"
+        } else if let existingWeight = existing?.weight {
+            weightPart = "Weight \(Self.formatWeightText(existingWeight)) \(weightUnitSpeechLabel)"
+        } else if let suggested = suggestedWeight {
+            weightPart = "Weight suggested \(Self.formatWeightText(suggested)) \(weightUnitSpeechLabel)"
+        } else {
+            weightPart = "Weight not entered"
+        }
+
+        let repsPart: String
+        if let enteredReps = Int(repsText) {
+            repsPart = "Reps \(enteredReps)"
+        } else if let existingReps = existing?.reps {
+            repsPart = "Reps \(existingReps)"
+        } else if let last = lastReps {
+            repsPart = "Reps last time \(last)"
+        } else {
+            repsPart = "Reps not entered"
+        }
+
+        let status = checked ? "Completed" : "Pending"
+        return "Set \(index). \(weightPart). \(repsPart). \(status)."
+    }
+
+    private var weightUnitSpeechLabel: String {
+        switch weightUnit {
+        case .lb: return "pounds"
+        case .kg: return "kilograms"
+        }
     }
 }
 

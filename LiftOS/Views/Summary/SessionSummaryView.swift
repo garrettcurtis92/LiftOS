@@ -18,7 +18,7 @@ struct SessionSummaryView: View {
             .padding(.bottom, 24)
         }
         .navigationTitle("Summary")
-        .navigationBarTitleDisplayMode(.inline)
+        .dsNavigationStyle()
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Done") { dismiss() }

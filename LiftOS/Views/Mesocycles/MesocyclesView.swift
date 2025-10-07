@@ -5,14 +5,13 @@ struct MesocyclesView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\Mesocycle.createdAt, order: .reverse)]) private var mesocycles: [Mesocycle]
     let onOpenTrain: (UUID) -> Void
-    // TODO: replace with SwiftData fetch
     @State private var showCreate = false
     @State private var pendingDelete: Mesocycle? = nil
     @State private var renaming: Mesocycle? = nil
     @State private var newName: String = ""
     @State private var errorMessage: String? = nil
     @State private var fullyCompleted: [Mesocycle] = []
-    // Derived bindings and helpers to simplify type-checking
+    
     private var deleteAlertBinding: Binding<Bool> {
         Binding(
             get: { pendingDelete != nil },
@@ -44,55 +43,146 @@ struct MesocyclesView: View {
                             .buttonStyle(.borderedProminent)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .background(DS.groupBg)
                 } else {
                     List {
+                        // Completion Banner
                         if !fullyCompleted.isEmpty {
                             Section {
                                 ForEach(fullyCompleted) { meso in
-                                    HStack(alignment: .firstTextBaseline) {
-                                        Image(systemName: "checkmark.seal.fill").foregroundStyle(.green)
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("All sessions complete")
-                                                .font(.subheadline.weight(.semibold))
-                                            Text("\(meso.name) is finished. Start your next mesocycle.")
-                                                .font(.footnote)
-                                                .foregroundStyle(.secondary)
+                                    DSCard {
+                                        HStack(spacing: 12) {
+                                            Image(systemName: "checkmark.seal.fill")
+                                                .imageScale(.large)
+                                                .symbolRenderingMode(.palette)
+                                                .foregroundStyle(.white, .green)
+                                                .accessibilityHidden(true)
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text("All sessions complete")
+                                                    .font(.headline)
+                                                Text("\(meso.name) is finished. Start your next mesocycle.")
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            Spacer()
+                                            Button("Create Mesocycle") { showCreate = true }
+                                                .buttonStyle(.borderedProminent)
                                         }
-                                        Spacer()
-                                        Button("Create Mesocycle") { showCreate = true }
-                                            .buttonStyle(.borderedProminent)
+                                    }
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
+                                }
+                            }
+                        }
+                        
+                        // Mesocycle List
+                        Section {
+                            ForEach(mesocycles) { meso in
+                                NavigationLink(value: meso) {
+                                    HStack(spacing: 12) {
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            HStack {
+                                                Text(meso.name)
+                                                    .font(.headline)
+                                                Spacer()
+                                                switch meso.status {
+                                                case .current:
+                                                    StatusChip(text: "CURRENT", tint: .blue)
+                                                case .completed:
+                                                    StatusChip(text: "COMPLETED", tint: .green)
+                                                case .planned:
+                                                    EmptyView()
+                                                }
+                                            }
+                                            Text("\(meso.weekCount) \(meso.weekCount == 1 ? "week" : "weeks") – \(meso.daysPerWeek) days/week")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                            
+                                            // Start Training button for current mesocycle
+                                            if meso.isCurrent && !meso.isCompleted {
+                                                Button {
+                                                    onOpenTrain(meso.id)
+                                                } label: {
+                                                    HStack {
+                                                        Image(systemName: "figure.strengthtraining.traditional")
+                                                        Text("Start Training")
+                                                    }
+                                                    .font(.subheadline.weight(.medium))
+                                                    .foregroundStyle(.white)
+                                                    .frame(maxWidth: .infinity)
+                                                    .padding(.vertical, 8)
+                                                    .background(.blue.gradient, in: RoundedRectangle(cornerRadius: 8))
+                                                }
+                                                .buttonStyle(.plain)
+                                                .padding(.top, 4)
+                                            }
+                                        }
+                                    }
+                                }
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .contextMenu {
+                                    Button("Rename", systemImage: "pencil") {
+                                        renaming = meso
+                                        newName = meso.name
+                                    }
+                                    Button("Duplicate", systemImage: "plus.square.on.square") {
+                                        copy(meso)
+                                    }
+                                    Button(role: .destructive) {
+                                        pendingDelete = meso
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        pendingDelete = meso
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                    
+                                    if !meso.isCompleted {
+                                        Button {
+                                            MesocycleStore.markCompleted(meso, in: modelContext)
+                                        } label: {
+                                            Label("Complete", systemImage: "checkmark.circle.fill")
+                                        }
+                                        .tint(.green)
+                                    }
+                                    
+                                    if !meso.isCurrent {
+                                        Button {
+                                            MesocycleStore.setCurrent(meso, in: modelContext)
+                                            onOpenTrain(meso.id)
+                                        } label: {
+                                            Label("Set Current", systemImage: "flag.checkered")
+                                        }
+                                        .tint(.blue)
+                                    }
+                                }
+                                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                    if meso.isCompleted {
+                                        Button {
+                                            copy(meso)
+                                        } label: {
+                                            Label("Copy", systemImage: "doc.on.doc")
+                                        }
+                                        .tint(.indigo)
                                     }
                                 }
                             }
                         }
-                        ForEach(mesocycles) { meso in
-                            Button { onOpenTrain(meso.id) } label: {
-                                MesocycleRowView(
-                                    item: MesocycleItem(
-                                        id: meso.id,
-                                        name: meso.name,
-                                        weekCount: meso.weekCount,
-                                        daysPerWeek: meso.daysPerWeek,
-                                        isCurrent: meso.isCurrent,
-                                        isCompleted: meso.isCompleted
-                                    ),
-                                    onNewNote: {  },
-                                    onRename: { renaming = meso; newName = meso.name },
-                                    onCopy: { copy(meso) },
-                                    onSummary: {  },
-                                    onSaveTemplate: {  },
-                                    onDelete: { pendingDelete = meso }
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .contentShape(Rectangle())
-                        }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background(DS.groupBg)
                 }
             }
             .navigationTitle("Mesocycles")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         showCreate = true
                     } label: {
@@ -103,6 +193,9 @@ struct MesocyclesView: View {
             }
             .navigationDestination(isPresented: $showCreate) {
                 CreateNewMesoView()
+            }
+            .navigationDestination(for: Mesocycle.self) { meso in
+                MesocycleEditorView(meso: meso)
             }
             .task(id: mesoIDs) {
                 recomputeCompletion()
@@ -157,11 +250,14 @@ struct MesocyclesView: View {
         for meso in mesocycles {
             if let _ = MesoProgress.nextPosition(for: meso.id, in: modelContext, daysPerWeek: meso.daysPerWeek, weekCount: meso.weekCount) {
                 // Has more to do
-                if meso.isCompleted { meso.isCompleted = false }
+                if meso.isCompleted { meso.status = .current }
             } else {
-                // Fully completed
-                newlyCompleted.append(meso)
-                if !meso.isCompleted { meso.isCompleted = true }
+                // Fully completed - mark as completed if not already
+                if !meso.isCompleted { meso.status = .completed }
+                // Only show in completion banner if actually marked as completed
+                if meso.isCompleted {
+                    newlyCompleted.append(meso)
+                }
             }
         }
         fullyCompleted = newlyCompleted
@@ -183,7 +279,7 @@ struct MesocyclesView: View {
     }
     
     private func copy(_ meso: Mesocycle) {
-        let dup = Mesocycle(name: meso.name + " Copy", weekCount: meso.weekCount, daysPerWeek: meso.daysPerWeek, isCurrent: false, isCompleted: false)
+        let dup = Mesocycle(name: meso.name + " Copy", weekCount: meso.weekCount, daysPerWeek: meso.daysPerWeek, status: .planned)
         // Duplicate days and selections
         for day in meso.days.sorted(by: { $0.index < $1.index }) {
             let newDay = MesoDay(index: day.index)

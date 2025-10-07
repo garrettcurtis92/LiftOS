@@ -21,6 +21,7 @@ struct WorkoutSessionView: View {
     @AppStorage("currentDayIx") private var currentDayIx: Int = 0
     @AppStorage("restTimerEnabled") private var restTimerEnabled: Bool = true
     @AppStorage("restTimerAutoStart") private var restTimerAutoStart: Bool = true
+    @AppStorage("restTimerDuration") private var restTimerDuration: Int = 90
     @AppStorage("hapticsEnabled") private var hapticsEnabled: Bool = true
 
     @Environment(\.modelContext) private var modelContext
@@ -41,7 +42,29 @@ struct WorkoutSessionView: View {
     @State private var errorMessage: String? = nil
     @State private var restRemaining: Int = 0
     @State private var restTimer: Timer? = nil
+
+    @State private var showTimerSheet = false
+    
+    // Sensory feedback triggers
+    @State private var sessionFinishTrigger = 0
+    @State private var sessionErrorTrigger = 0
+    @State private var restTimerEndTrigger = 0
     //
+
+    init(
+        dayLabel: String? = nil,
+        preset: String,
+        mesocycleID: UUID?,
+        onGoToMesocycles: (() -> Void)? = nil,
+        onMesocycleCompleted: (() -> Void)? = nil
+    ) {
+        self.dayLabel = dayLabel
+        self.preset = preset
+        self.mesocycleID = mesocycleID
+        self.onGoToMesocycles = onGoToMesocycles
+        self.onMesocycleCompleted = onMesocycleCompleted
+        _session = State(initialValue: Self.makeSession(title: preset, mesocycleID: mesocycleID))
+    }
 
     // Helper to show a full weekday name from currentDayIx (0-based)
     private func weekdayName(for ix: Int) -> String {
@@ -49,6 +72,17 @@ struct WorkoutSessionView: View {
         let names = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
         guard ix >= 0 && ix < names.count else { return "Day \(ix + 1)" }
         return names[ix]
+    }
+    
+    // Helper to format rest time for display
+    private func formatRestTime(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let remainingSeconds = seconds % 60
+        if minutes > 0 {
+            return String(format: "%d:%02d", minutes, remainingSeconds)
+        } else {
+            return "\(seconds)s"
+        }
     }
 
     private var sessionProgress: Double {
@@ -59,6 +93,11 @@ struct WorkoutSessionView: View {
         }
         guard total > 0 else { return 0 }
         return min(1, Double(done) / Double(total))
+    }
+
+    // Remove per-exercise tinting - use system accent color
+    private var currentExerciseTint: Color {
+        return .accentColor
     }
     
     // MARK: - Persistence helpers
@@ -78,7 +117,7 @@ struct WorkoutSessionView: View {
             e.reps = reps
             e.done = done
             e.updatedAt = Date()
-            e.exerciseName = exerciseDisplayName // keep display fresh if it changed
+            e.exerciseName = exerciseDisplayName
             e.unit = unit
         } else {
             let rec = WorkoutLogEntry(
@@ -97,7 +136,7 @@ struct WorkoutSessionView: View {
         }
         try? modelContext.save()
     }
-    
+
     private func deleteSetLog(mesocycleID: UUID, week: Int, dayIx: Int, exerciseKey: String, setIndex: Int) {
         let _meso = mesocycleID
         let _week = week
@@ -112,177 +151,104 @@ struct WorkoutSessionView: View {
             try? modelContext.save()
         }
     }
-
-    init(dayLabel: String? = nil, preset: String, mesocycleID: UUID? = nil, onGoToMesocycles: (() -> Void)? = nil, onMesocycleCompleted: (() -> Void)? = nil) {
-        self.dayLabel = dayLabel
-        self.preset = preset
-        self.mesocycleID = mesocycleID
-        self.onGoToMesocycles = onGoToMesocycles
-        self.onMesocycleCompleted = onMesocycleCompleted
-        self._session = State(initialValue: WorkoutSession(title: preset, exercises: []))
-    }
-
-    var body: some View {
-        if activeMesocycle == nil || session.exercises.isEmpty {
-            ContentUnavailableView {
-                Label(
-                    activeMesocycle == nil ? "No Active Mesocycle" : "No Workout Scheduled",
-                    systemImage: activeMesocycle == nil ? "chart.line.uptrend.xyaxis" : "calendar"
-                )
-            } description: {
-                if activeMesocycle != nil {
-                    Text("This day has no workouts in the current mesocycle.")
-                }
-            } actions: {
-                if activeMesocycle == nil {
-                    Button {
-                        Haptics.tap()
-                        if let onGoToMesocycles {
-                            onGoToMesocycles()
-                        } else {
-                            dismiss()
-                        }
-                    } label: {
-                        Label("Go to Mesocycles", systemImage: "chart.line.uptrend.xyaxis")
-                    }
-                    .buttonStyle(.borderedProminent)
+    
+    var body: some View  {
+        mainTabView
+        .scrollDismissesKeyboard(.interactively)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            // Principal: Mesocycle name and session info
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 2) {
+                    Text(activeMesocycle?.name ?? session.title)
+                        .font(.headline)
+                        .lineLimit(1)
+                    
+                    Text("Week \(currentWeek) · \(dayLabel ?? weekdayName(for: currentDayIx))")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .numericTextTransitionIfAvailable()
                 }
             }
-            .task {
-                if let id = mesocycleID {
-                    // Fetch Mesocycle by id
-                    let descriptor = FetchDescriptor<Mesocycle>(predicate: #Predicate { $0.id == id })
-                    if let found = try? modelContext.fetch(descriptor).first {
-                        activeMesocycle = found
-                        syncNextPositionFromMeso()
-                        rebuildSessionForCurrentPosition()
-                    }
+            
+            // Trailing: Progress gauge and timer button
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                // Progress gauge
+                ZStack {
+                    Circle()
+                        .stroke(.quaternary, lineWidth: 2.5)
+                        .frame(width: 22, height: 22)
+                    
+                    Circle()
+                        .trim(from: 0, to: min(max(sessionProgress, 0), 1))
+                        .stroke(FitnessDS.FitnessTint.primary, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                        .frame(width: 22, height: 22)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.snappy(duration: 0.6, extraBounce: 0.1), value: sessionProgress)
                 }
-                let target = MesocycleRules.rirTarget(forWeek: currentWeek)
-                for i in session.exercises.indices { session.exercises[i].rirTarget = target }
-
-                if let id = mesocycleID {
-                    for i in session.exercises.indices {
-                        let name = session.exercises[i].name
-                        let hasBL = await MesocycleProgressionEngine.hasBaseline(mesocycleID: id, exerciseName: name, currentWeek: currentWeek, currentDayIx: currentDayIx, modelContext: modelContext)
-                        let priorCount = await MesocycleProgressionEngine.priorSessionCount(mesocycleID: id, exerciseName: name, currentWeek: currentWeek, currentDayIx: currentDayIx, modelContext: modelContext)
-                        var didPrefill = false
-                        if currentWeek >= 2 {
-                            // Preferred: read precomputed targets from v2 store
-                            if let v2 = await ProgressionStoreV2.shared.getTarget(mesocycleID: id, exercise: name) {
-                                session.exercises[i].suggestedNextWeight = v2.nextWeight
-                                session.exercises[i].suggestedNextRepTargetLower = v2.nextRepTargetLower
-                                session.exercises[i].suggestedNextRepTargetUpper = v2.nextRepTargetUpper
-                                didPrefill = (v2.nextWeight != nil) || (v2.nextRepTargetLower != nil) || (v2.nextRepTargetUpper != nil)
-                            } else if let next = ProgressionStore.shared.get(mesocycleID: id, exerciseName: name) {
-                                // Legacy fallback (v1)
-                                session.exercises[i].suggestedNextWeight = next.nextWeight
-                                session.exercises[i].suggestedNextRepTargetLower = next.nextRepTargetLower
-                                session.exercises[i].suggestedNextRepTargetUpper = next.nextRepTargetUpper
-                                didPrefill = (next.nextWeight != nil) || (next.nextRepTargetLower != nil) || (next.nextRepTargetUpper != nil)
-                            } else {
-                                // On-the-fly fallback when no stored targets are available
-                                let kind = MesocycleProgressionEngine.classifyKind(from: name)
-                                let isCompound = (kind == .compound)
-                                let input = ExerciseProgressInput(
-                                    mesocycleID: id,
-                                    exerciseName: name,
-                                    isCompound: isCompound,
-                                    lastTopSetWeight: nil,
-                                    lastTopSetReps: nil,
-                                    targetReps: 8...10,
-                                    targetRIR: session.exercises[i].rirTarget,
-                                    achievedRIR: nil
-                                )
-                                let res = await MesocycleProgressionEngine.decideNext(
-                                    input: input,
-                                    weightUnit: weightUnit,
-                                    currentWeek: currentWeek,
-                                    currentDayIx: currentDayIx,
-                                    modelContext: modelContext
-                                )
-                                let out = res.output
-                                session.exercises[i].suggestedNextWeight = out.nextWeight
-                                session.exercises[i].suggestedNextRepTargetLower = out.nextRepTarget?.lowerBound
-                                session.exercises[i].suggestedNextRepTargetUpper = out.nextRepTarget?.upperBound
-                                didPrefill = (out.nextWeight != nil) || (out.nextRepTarget != nil)
-                            }
-                        }
-#if DEBUG
-                        print("[PrefillTrace] week=\(currentWeek) day=\(currentDayIx) exercise=\(name) hasBaseline=\(hasBL) priorSessions=\(priorCount) didPrefill=\(didPrefill)")
-#endif
+                .padding(.vertical, 2)
+                .compositingGroup()
+                .accessibilityLabel("Progress: \(Int(min(max(sessionProgress, 0), 1) * 100)) percent complete")
+                
+                // Timer chip (if active)
+                if restRemaining > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "timer")
+                            .font(.caption2)
+                        Text(formatRestTime(restRemaining))
+                            .font(FitnessDS.Typography.captionMedium)
+                            .monospacedDigit()
+                            .numericTextTransitionIfAvailable()
                     }
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(FitnessDS.Materials.surface, in: Capsule())
+                    .accessibilityLabel("Rest timer")
+                    .accessibilityValue("\(restRemaining) seconds remaining")
                 }
-            }
-        } else {
-            VStack(spacing: 0) {
-                ExerciseListView(
-                    exercises: session.exercises,
-                    completed: completed,
-                    weightUnit: weightUnit,
-                    lastRepsProvider: { ex in lastRepsDict(for: ex) },
-                    hasBaseline: { ex in
-                        ex.suggestedNextWeight != nil || ex.suggestedNextRepTargetLower != nil || ex.suggestedNextRepTargetUpper != nil
-                    },
-                    onAddSet: { handleAddSet(for: $0) },
-                    onSkipSet: { ex, idx in handleSkipSet(for: ex, index: idx) },
-                    onDeleteSet: { ex, idx in handleDeleteSet(for: ex, index: idx) },
-                    onCommitInline: { ex, idx, w, r, checked in handleCommitInline(for: ex, index: idx, weight: w, reps: r, checked: checked) }
-                )
-            }
-            .scrollContentBackground(.hidden)
-            .background(WorkoutBackground())
-            .scrollDismissesKeyboard(.interactively)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
-            .safeAreaInset(edge: .top) {
-                SessionHeaderBar(
-                    week: currentWeek,
-                    dayLabel: dayLabel ?? weekdayName(for: currentDayIx),
-                    sessionProgress: sessionProgress,
-                    showRestTimer: $showRestTimer,
-                    onPickRestDuration: { secs in
-                        lastRestDuration = secs
-                        if restTimerEnabled {
-                            if restTimerAutoStart {
-                                startRestCountdown(seconds: secs)
-                            } else {
-                                showRestTimer = true
-                            }
-                        }
-                    }
-                )
-                .overlay(alignment: .bottomTrailing) {
-                    if restRemaining > 0 {
-                        Text("\(restRemaining)s")
-                            .font(.caption.monospacedDigit())
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Capsule().fill(.thinMaterial))
-                            .padding(.trailing, 12)
-                            .padding(.bottom, 6)
-                            .accessibilityLabel("Rest remaining \(restRemaining) seconds")
-                    }
+                
+                // Timer button
+                Button {
+                    showTimerSheet = true
+                } label: {
+                    Image(systemName: "timer")
                 }
+                .accessibilityLabel("Rest timer")
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle(activeMesocycle?.name ?? session.title)
-            // Bottom finish bar (only when all sets done)
-            .safeAreaInset(edge: .bottom) {
-                if stableAllSetsLogged && !showRestTimer {
-                    VStack { 
-                        PrimaryButton(title: "Finish Session", systemIcon: "checkmark.circle.fill", style: .success) {
-                            Haptics.success()
-                            finishSession()
-                        }
+        }
+        // Bottom finish bar (only when all sets done)
+        .safeAreaInset(edge: .bottom) {
+            if stableAllSetsLogged && !showRestTimer {
+                HStack {
+                    Spacer()
+                    PrimaryButton(
+                        title: "Finish Session",
+                        systemIcon: "checkmark.circle.fill",
+                        style: .success
+                    ) {
+                        finishSession()
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(.ultraThinMaterial)
+                    .sensoryFeedback(.success, trigger: sessionFinishTrigger)
+                    .accessibilityLabel(Text("Finish Session. Saves your logs and completes today's workout."))
+                    .accessibilityHint(Text("Double tap to save your logs and close today's workout."))
+                    .frame(maxWidth: 280)
+                    Spacer()
                 }
+                .padding(.horizontal, FitnessDS.Space.xl.rawValue)
+                .padding(.vertical, FitnessDS.Space.lg.rawValue)
+                .background(FitnessDS.Materials.navigation)
             }
-            // Apply week-based RIR on appear
-            .onAppear {
+        }
+        .background {
+            WorkoutBackground()
+        }
+        .tint(currentExerciseTint)
+        .sensoryFeedback(.warning, trigger: sessionErrorTrigger)
+        .sensoryFeedback(.impact(weight: .light), trigger: restTimerEndTrigger)
+        // Apply week-based RIR on appear
+        .onAppear {
                 LoggingMigrator.runIfNeeded(modelContext)
                 if let id = mesocycleID {
                     // Fetch Mesocycle by id
@@ -340,7 +306,11 @@ struct WorkoutSessionView: View {
                             let hasBL = await MesocycleProgressionEngine.hasBaseline(mesocycleID: id, exerciseName: name, currentWeek: currentWeek, currentDayIx: currentDayIx, modelContext: modelContext)
                             let priorCount = await MesocycleProgressionEngine.priorSessionCount(mesocycleID: id, exerciseName: name, currentWeek: currentWeek, currentDayIx: currentDayIx, modelContext: modelContext)
                             var didPrefill = false
-                            if currentWeek >= 2 {
+                            
+                            // Enable prefill if we're in week 2+ OR if we have prior data in week 1
+                            let shouldAttemptPrefill = currentWeek >= 2 || priorCount > 0
+                            
+                            if shouldAttemptPrefill {
                                 // Preferred: read precomputed targets from v2 store
                                 if let v2 = await ProgressionStoreV2.shared.getTarget(mesocycleID: id, exercise: name) {
                                     session.exercises[i].suggestedNextWeight = v2.nextWeight
@@ -395,37 +365,71 @@ struct WorkoutSessionView: View {
                     loadLoggedSessionIfAvailable()
                 }
             }
-            .sheet(item: $lastSummary, onDismiss: { handlePostSummaryFlow() }) { s in
-                NavigationStack { SessionSummaryView(summary: s) }
+        .sheet(item: $lastSummary, onDismiss: { handlePostSummaryFlow() }) { s in
+            NavigationStack { SessionSummaryView(summary: s) }
+        }
+        .sheet(isPresented: $showCongrats) {
+            MesoCompletionCongratsView(mesocycleName: activeMesocycle?.name ?? "Mesocycle") {
+                showCongrats = false
+                onMesocycleCompleted?()
             }
-            .sheet(isPresented: $showCongrats) {
-                MesoCompletionCongratsView(mesocycleName: activeMesocycle?.name ?? "Mesocycle") {
-                    showCongrats = false
-                    onMesocycleCompleted?()
-                }
+        }
+        .sheet(isPresented: $showRestTimer) {
+            RestTimerView(seconds: lastRestDuration) {
+                showRestTimer = false
             }
-            .sheet(isPresented: $showRestTimer) {
-                RestTimerView(seconds: lastRestDuration) {
-                    showRestTimer = false
-                }
-            }
-            .onChange(of: restTimerEnabled) { oldValue, newValue in
-                if !newValue {
-                    showRestTimer = false
+        }
+        .sheet(isPresented: $showTimerSheet) {
+            TimerPresetSheet(
+                presets: [30, 60, 90, 120],
+                currentTimer: restRemaining,
+                onSelect: { seconds in
+                    startRestCountdown(seconds: seconds)
+                    showTimerSheet = false
+                },
+                onStop: {
                     cancelRestCountdown()
+                },
+                onDismiss: {
+                    showTimerSheet = false
                 }
-            }
-            .onDisappear {
+            )
+        }
+        .onChange(of: restTimerEnabled) { oldValue, newValue in
+            if !newValue {
+                showRestTimer = false
                 cancelRestCountdown()
             }
-            .alert("Incomplete Session", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-                Button("OK", role: .cancel) { errorMessage = nil }
-            } message: {
-                Text(errorMessage ?? "")
-            }
+        }
+        .onDisappear {
+            cancelRestCountdown()
+        }
+        .alert("Incomplete Session", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button("OK", role: .cancel) { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "")
         }
     }
 
+    // MARK: - View Components
+    
+    private var mainTabView: some View {
+        SessionTabView(
+            session: session,
+            completed: completed,
+            weightUnit: weightUnit,
+            lastRepsProvider: { ex in lastRepsDict(for: ex) },
+            hasBaselineProvider: { ex in
+                ex.suggestedNextWeight != nil || ex.suggestedNextRepTargetLower != nil || ex.suggestedNextRepTargetUpper != nil
+            },
+            onAddSet: { handleAddSet(for: $0) },
+            onSkipSet: { ex, idx in handleSkipSet(for: ex, index: idx) },
+            onDeleteSet: { ex, idx in handleDeleteSet(for: ex, index: idx) },
+            onCommitInline: { ex, idx, w, r, checked in handleCommitInline(for: ex, index: idx, weight: w, reps: r, checked: checked) },
+            hapticsEnabled: hapticsEnabled
+        )
+    }
+    
     // MARK: - Derived
     private var mesocycleName: String {
         // If we add naming later, pull from ActiveMesocycleStore; for now use a friendly placeholder.
@@ -449,35 +453,24 @@ struct WorkoutSessionView: View {
         let _week = currentWeek
         let _day = currentDayIx
 
-        // Determine planned items for the day using snapshot first
-        let planned: [(key: String, sets: Int)] = {
-            if let snap = activeMesocycle.planSnapshot, currentDayIx < snap.count {
-                let d = snap[currentDayIx]
-                return d.exercises.map { (PlanKey.normalize($0.exerciseDisplayName), $0.defaultSets) }
-            } else if currentDayIx < activeMesocycle.days.count {
-                let daysSorted = activeMesocycle.days.sorted(by: { $0.index < $1.index })
-                let day = daysSorted[currentDayIx]
-                return day.selections.compactMap { sel in
-                    if let ex = sel.exercise { return (PlanKey.normalize(ex.name), 3) }
-                    return nil
-                }
-            } else { return [] }
-        }()
-
+        // Use current session's exercises and their target sets (respects deleted sets)
         // Fetch all logs for the day
         let d = FetchDescriptor<WorkoutLogEntry>(predicate: #Predicate { $0.mesocycleID == _meso && $0.week == _week && $0.dayIx == _day })
         let logs = (try? modelContext.fetch(d)) ?? []
         let grouped = Dictionary(grouping: logs, by: { $0.exerciseKey })
 
-        for (key, sets) in planned {
+        // Check each exercise in the current session (not the planned template)
+        for ex in session.exercises {
+            let key = PlanKey.normalize(ex.name)
             let entries = grouped[key] ?? []
-            guard sets > 0 else { return false }
-            let byIx = Dictionary(uniqueKeysWithValues: entries.map { ($0.setIndex, $0) })
-            for idx in 1...sets {
+            let targetSets = ex.targetSets
+            guard targetSets > 0 else { return false }
+            let byIx: [Int: WorkoutLogEntry] = Dictionary(uniqueKeysWithValues: entries.map { ($0.setIndex, $0) })
+            for idx in 1...targetSets {
                 guard let e = byIx[idx], e.done, e.weight != nil, e.reps != nil else { return false }
             }
         }
-        return !planned.isEmpty
+        return !session.exercises.isEmpty
     }
     
     private struct LoggedSet: Codable {
@@ -555,17 +548,23 @@ struct WorkoutSessionView: View {
         restTimer?.invalidate()
         restRemaining = seconds
         showRestTimer = false
-        restTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { t in
+
+        var timer: Timer? = nil
+        let newTimer = Timer(timeInterval: 1.0, repeats: true) { _ in
             if UIAccessibility.isReduceMotionEnabled {
                 // No tick animations, just decrement
             }
+            // Ensure state updates happen on the main thread
             restRemaining -= 1
             if restRemaining <= 0 {
-                t.invalidate()
+                timer?.invalidate()
                 restRemaining = 0
-                if hapticsEnabled { Haptics.tap() }
+                restTimerEndTrigger += 1
             }
         }
+        timer = newTimer
+        RunLoop.main.add(newTimer, forMode: .common)
+        restTimer = newTimer
     }
 
     private func cancelRestCountdown() {
@@ -578,9 +577,7 @@ struct WorkoutSessionView: View {
     private func finishSession() {
         // Defensive check: ensure all sets are fully logged
         guard allSetsLogged else {
-            #if canImport(UIKit)
-            UINotificationFeedbackGenerator().notificationOccurred(.warning)
-            #endif
+            sessionErrorTrigger += 1
             errorMessage = "Please complete all sets (weight and reps) before finishing."
             return
         }
@@ -598,7 +595,7 @@ struct WorkoutSessionView: View {
             modelContext.insert(completion)
             try? modelContext.save()
         }
-        Haptics.success()
+        sessionFinishTrigger += 1
         
         guard let mesoID = mesocycleID else { return }
 
@@ -759,7 +756,11 @@ struct WorkoutSessionView: View {
                     let hasBL = await MesocycleProgressionEngine.hasBaseline(mesocycleID: id, exerciseName: name, currentWeek: currentWeek, currentDayIx: currentDayIx, modelContext: modelContext)
                     let priorCount = await MesocycleProgressionEngine.priorSessionCount(mesocycleID: id, exerciseName: name, currentWeek: currentWeek, currentDayIx: currentDayIx, modelContext: modelContext)
                     var didPrefill = false
-                    if currentWeek >= 2 {
+                    
+                    // Enable prefill if we're in week 2+ OR if we have prior data in week 1
+                    let shouldAttemptPrefill = currentWeek >= 2 || priorCount > 0
+                    
+                    if shouldAttemptPrefill {
                         // Preferred: read precomputed targets from v2 store
                         if let v2 = await ProgressionStoreV2.shared.getTarget(mesocycleID: id, exercise: name) {
                             session.exercises[i].suggestedNextWeight = v2.nextWeight
@@ -870,7 +871,7 @@ struct WorkoutSessionView: View {
         if let pos = arr.firstIndex(where: { $0.index == index }) { arr[pos] = newSet } else { arr.append(newSet) }
         completed[exID] = arr
         if checked && restTimerEnabled {
-            lastRestDuration = 90
+            lastRestDuration = restTimerDuration
             if restTimerAutoStart {
                 startRestCountdown(seconds: lastRestDuration)
             } else {
@@ -914,17 +915,139 @@ struct WorkoutSessionView: View {
 }
 
 struct WorkoutBackground: View {
-    @Environment(\.colorScheme) private var scheme
-
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         LinearGradient(
-            colors: scheme == .dark
-                ? [Color.black, Color(white: 0.08)]
-                : [Color(white: 0.98), Color(white: 0.94)],
+            colors: adaptiveGradientColors,
             startPoint: .top,
             endPoint: .bottom
         )
         .ignoresSafeArea()
+    }
+    
+    private var adaptiveGradientColors: [Color] {
+        switch colorScheme {
+        case .dark:
+            return [Color.black, Color(white: 0.08)]
+        case .light:
+            return [Color(white: 0.98), Color(white: 0.92)]
+        @unknown default:
+            return [Color.black, Color(white: 0.08)]
+        }
+    }
+}
+
+// MARK: - Session Tab View Component
+
+struct SessionTabView: View {
+    let session: WorkoutSession
+    let completed: [UUID: [ExerciseSet]]
+    let weightUnit: WeightUnit
+    let lastRepsProvider: (ExerciseItem) -> [Int: Int]
+    let hasBaselineProvider: (ExerciseItem) -> Bool
+    let onAddSet: (ExerciseItem) -> Void
+    let onSkipSet: (ExerciseItem, Int) -> Void
+    let onDeleteSet: (ExerciseItem, Int) -> Void
+    let onCommitInline: (ExerciseItem, Int, Double?, Int?, Bool) -> Void
+    let hapticsEnabled: Bool
+    
+    @FocusState private var focusedField: SessionField?
+    
+    var body: some View {
+        List {
+            ForEach(session.exercises.indices, id: \.self) { exerciseIndex in
+                Section {
+                    let exercise = session.exercises[exerciseIndex]
+                    let existingSets = completed[exercise.id] ?? []
+                    let lastReps = lastRepsProvider(exercise)
+                    let hasBaseline = hasBaselineProvider(exercise)
+                    
+                    ForEach(1...exercise.targetSets, id: \.self) { setIndex in
+                        InlineSetRow(
+                            exerciseID: exercise.id,
+                            index: setIndex,
+                            totalSets: exercise.targetSets,
+                            weightUnit: weightUnit,
+                            rirTarget: exercise.rirTarget,
+                            existing: existingSets.first(where: { $0.index == setIndex }),
+                            previousWeight: existingSets.filter { $0.index < setIndex }.compactMap { $0.weight }.last,
+                            suggestedWeight: hasBaseline ? exercise.suggestedNextWeight : nil,
+                            lastReps: lastReps[setIndex],
+                            focusedField: $focusedField,
+                            onCommit: { w, r, checked in 
+                                onCommitInline(exercise, setIndex, w, r, checked)
+                            },
+                            onAddSet: { onAddSet(exercise) },
+                            onSkip: { onSkipSet(exercise, setIndex) },
+                            onDelete: { onDeleteSet(exercise, setIndex) }
+                        )
+                        .id("\(exercise.id)-\(setIndex)")
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 6, leading: DS.Metrics.cardInset, bottom: 6, trailing: DS.Metrics.cardInset))
+                        .listRowBackground(Color.clear)
+                    }
+                    
+                    // Add Set button
+                    Button {
+                        Haptics.tap()
+                        onAddSet(exercise)
+                    } label: {
+                        Label("Add Set", systemImage: "plus")
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 6)
+                } header: {
+                    // Exercise header
+                    HStack(spacing: 12) {
+                        // Set number circle
+                        Text("\(exerciseIndex + 1)")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(width: 32, height: 32)
+                            .background(
+                                Circle()
+                                    .fill(.tint.opacity(0.1))
+                            )
+                            .overlay(
+                                Circle()
+                                    .stroke(.tint, lineWidth: 2)
+                            )
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(session.exercises[exerciseIndex].name)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                                .lineLimit(2)
+                            
+                            Text("\(exerciseIndex + 1) of \(session.exercises.count)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        // Exercise type pill
+                        if let typeLabel = session.exercises[exerciseIndex].typeLabel {
+                            DSPill(text: typeLabel)
+                        }
+                    }
+                    .padding(.horizontal, DS.Metrics.cardInset)
+                    .padding(.vertical, DS.Metrics.rowSpacing)
+                }
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(DS.groupBg)
+        .scrollDismissesKeyboard(.immediately)
+        .safeAreaInset(edge: .bottom) {
+            // Reserve space for the "Finish Session" button to prevent keyboard overlap
+            Color.clear.frame(height: 100)
+        }
     }
 }
 
@@ -934,13 +1057,20 @@ fileprivate enum ExerciseTypeLabelProvider {
     }
     static func typeLabel(forDisplayName name: String) -> String? {
         // Heuristic fallback using the progression catalog equip heuristics
+        // IMPORTANT: Check specific terms BEFORE generic terms to avoid false positives
         let lower = name.lowercased()
-        if lower.contains("barbell") || lower.contains("squat") || lower.contains("deadlift") || lower.contains("bench") || lower.contains("row") || lower.contains("press") { return "Barbell" }
-        if lower.contains("dumbbell") || lower.contains(" db ") { return "Dumbbell" }
+        
+        // Check for specific equipment types first (more specific checks)
         if lower.contains("cable") || lower.contains("pulldown") { return "Cable" }
+        if lower.contains("dumbbell") || lower.contains(" db ") { return "Dumbbell" }
         if lower.contains("smith") { return "Smith" }
         if lower.contains("assist") { return "Assistance" }
         if lower.contains("bodyweight") { return "Bodyweight" }
+        if lower.contains("machine") || lower.contains("leg extension") || lower.contains("leg press") || lower.contains("leg curl") || lower.contains("pec deck") || lower.contains("hack squat") || lower.contains("pendulum") || lower.contains("hammer machine") || lower.contains("chest press (flat)") || lower.contains("chest press (incline)") { return "Machine" }
+        
+        // Generic terms last (less specific, catch-all)
+        if lower.contains("barbell") || lower.contains("squat") || lower.contains("deadlift") || lower.contains("bench") || lower.contains("row") || lower.contains("press") { return "Barbell" }
+        
         return nil
     }
     private static func readableType(_ t: Exercise.ExerciseType) -> String {
@@ -956,4 +1086,5 @@ fileprivate enum ExerciseTypeLabelProvider {
         }
     }
 }
+
 

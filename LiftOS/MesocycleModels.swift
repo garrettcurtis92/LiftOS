@@ -37,12 +37,17 @@ enum DayLabelStyle: String, Codable {
 
 @Model
 final class Mesocycle {
+    enum Status: String, Codable {
+        case planned
+        case current
+        case completed
+    }
+    
     var id: UUID = UUID()
     var name: String = ""
     var weekCount: Int = 0
     var daysPerWeek: Int = 0
-    var isCurrent: Bool = false
-    var isCompleted: Bool = false
+    var status: Status = Status.planned
     var createdAt: Date = Date()
 
     var startDate: Date? = nil
@@ -57,8 +62,7 @@ final class Mesocycle {
          name: String,
          weekCount: Int,
          daysPerWeek: Int,
-         isCurrent: Bool = false,
-         isCompleted: Bool = false,
+         status: Status = .planned,
          createdAt: Date = Date(),
          startDate: Date? = Date(),
          labelStyle: DayLabelStyle = .fixedWeekdays) {
@@ -66,12 +70,16 @@ final class Mesocycle {
         self.name = name
         self.weekCount = weekCount
         self.daysPerWeek = daysPerWeek
-        self.isCurrent = isCurrent
-        self.isCompleted = isCompleted
+        self.status = status
         self.createdAt = createdAt
         self.startDate = startDate
         self.labelStyleRaw = labelStyle.rawValue
     }
+}
+
+extension Mesocycle {
+    var isCurrent: Bool { status == .current }
+    var isCompleted: Bool { status == .completed }
 }
 
 extension Mesocycle {

@@ -14,8 +14,11 @@ struct MesocycleItem: Identifiable, Hashable {
     let name: String
     let weekCount: Int
     let daysPerWeek: Int
-    let isCurrent: Bool
-    let isCompleted: Bool
+    let status: Mesocycle.Status
+    
+    // Computed properties for backward compatibility
+    var isCurrent: Bool { status == .current }
+    var isCompleted: Bool { status == .completed }
 }
 
 struct MesocycleRowView: View {
@@ -43,16 +46,18 @@ struct MesocycleRowView: View {
 
             Spacer(minLength: 8)
 
-            // Status badge (CURRENT or ✓)
-            if item.isCurrent {
-                CapsuleLabel(text: "CURRENT")
+            // Status badge
+            switch item.status {
+            case .current:
+                StatusChip(text: "CURRENT", tint: .blue)
                     .transition(.scale.combined(with: .opacity))
                     .accessibilityLabel("Current mesocycle")
-            } else if item.isCompleted {
-                Image(systemName: "checkmark.circle.fill")
-                    .imageScale(.large)
-                    .foregroundStyle(.green)
+            case .completed:
+                StatusChip(text: "COMPLETED", tint: .green)
+                    .transition(.scale.combined(with: .opacity))
                     .accessibilityLabel("Mesocycle completed")
+            case .planned:
+                EmptyView()
             }
 
             // Visible ellipsis menu (discoverable)

@@ -4,7 +4,7 @@ import SwiftData
 struct ContentView: View {
     
     private enum AppTab: Hashable {
-        case train, mesocycles, exercises, more, chat
+        case train, mesocycles, exercises, more
     }
     
     @AppStorage("accentChoice") private var accentChoiceRaw: String = AccentChoice.multicolor.rawValue
@@ -13,6 +13,9 @@ struct ContentView: View {
     @State private var selectedTab: AppTab = .train
     @State private var selectedMesocycleID: UUID? = nil
     @State private var didResolveCurrentMesoOnLaunch = false
+    
+    // New Assistant Orb Controller (replaces old chat sheet state)
+    @StateObject private var orbController = OrbController()
     
     private var selectedAccentColor: Color? {
         let choice = AccentChoice(rawValue: accentChoiceRaw) ?? .multicolor
@@ -38,13 +41,15 @@ struct ContentView: View {
                 guard !didResolveCurrentMesoOnLaunch else { return }
                 didResolveCurrentMesoOnLaunch = true
                 // Fetch current mesocycle and set selectedMesocycleID
-                let descriptor = FetchDescriptor<Mesocycle>(predicate: #Predicate { $0.isCurrent == true })
-                if let current = try? modelContext.fetch(descriptor).first {
+                // Note: Can't use enum in predicate, fetch all and filter
+                let descriptor = FetchDescriptor<Mesocycle>()
+                if let current = try? modelContext.fetch(descriptor).first(where: { $0.isCurrent }) {
                     selectedMesocycleID = current.id
                 }
             }
             .tabItem { Label("Train", systemImage: "dumbbell") }
             .tag(AppTab.train)
+            .overlay(alignment: .top) { orbOverlay(for: "train") }
             
             // MESOCYCLES
             MesocyclesView(onOpenTrain: { id in
@@ -53,6 +58,7 @@ struct ContentView: View {
             })
             .tabItem { Label("Mesocycles", systemImage: "chart.line.uptrend.xyaxis") }
             .tag(AppTab.mesocycles)
+            .overlay(alignment: .top) { orbOverlay(for: "mesocycles") }
             .onChange(of: selectedTab) { _, newTab in
                 // When returning to Train, ensure selected mesocycle still exists
                 guard newTab == .train else { return }
@@ -69,18 +75,33 @@ struct ContentView: View {
                 .task { await seedPrefillCatalogIfNeeded(modelContext) }
                 .tabItem { Label("Exercises", systemImage: "books.vertical") }
                 .tag(AppTab.exercises)
+                .overlay(alignment: .top) { orbOverlay(for: "exercises") }
             
             // MORE
             MoreView()
                 .tabItem { Label("More", systemImage: "gear") }
                 .tag(AppTab.more)
-            
-            // CHAT (detached feel)
-            NavigationStack { ChatWindowView() }
-                .tabItem { Label("Chat", systemImage: "bubble.left.and.bubble.right.fill") }
-                .tag(AppTab.chat)
+                .overlay(alignment: .top) { orbOverlay(for: "more") }
         }
         .tint(selectedAccentColor ?? MulticolorAccent.color(for: .navigation))
+        .fitnessNavigationStyle()
+        .environmentObject(orbController)
+        .sheet(isPresented: $orbController.isPresentingSheet) {
+            AssistantSheetView()
+                .presentationDetents([.fraction(0.55), .large])
+                .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.55)))
+        }
+    }
+    
+    // MARK: - Assistant Orb Overlay
+    
+    @ViewBuilder
+    private func orbOverlay(for key: String) -> some View {
+        // Top-level overlay so the orb floats above content but under system alerts
+        AssistantOrb(tabKey: key)
+            .padding(.bottom, 8) // minor spacing from bottom bars when near
+            .padding(.top, 0)
+            .allowsHitTesting(true)
     }
     
     // MARK: - Catalog Seeding Helper

@@ -32,6 +32,7 @@ struct ExerciseListView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .listSectionSpacing(20)  // Increased spacing between exercises
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()

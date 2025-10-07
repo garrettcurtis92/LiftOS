@@ -1,0 +1,416 @@
+{
+  "" : {
+    "const-values" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary.swiftconstvalues",
+    "dependencies" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary.d",
+    "diagnostics" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary.dia",
+    "emit-module-dependencies" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary-emit-module.dia",
+    "pch" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOS-primary.swiftdeps"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/App/ContentView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/App/ExerciseCardView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseCardView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseCardView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseCardView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/App/LiftOSApp.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOSApp.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOSApp.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LiftOSApp.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/App/SessionHeaderBar.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionHeaderBar.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionHeaderBar.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionHeaderBar.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/App/View+NumericTextTransition.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/View+NumericTextTransition.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/View+NumericTextTransition.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/View+NumericTextTransition.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/CatalogValidator.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CatalogValidator.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CatalogValidator.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CatalogValidator.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Components/ExercisePage.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExercisePage.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExercisePage.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExercisePage.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Components/ExercisePageView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExercisePageView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExercisePageView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExercisePageView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Components/GlassPanel.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlassPanel.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlassPanel.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlassPanel.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Components/PrimaryButton.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrimaryButton.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrimaryButton.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrimaryButton.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Components/SectionHeader.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SectionHeader.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SectionHeader.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SectionHeader.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/DesignSystem/DesignSystem.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/DesignSystem.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/DesignSystem.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/DesignSystem.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/DesignSystem/Theme.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Theme.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Theme.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Theme.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/DesignSystem/Typography.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Typography.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Typography.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Typography.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/ExerciseKey.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseKey.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseKey.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseKey.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/ExerciseProgressionCatalog.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseProgressionCatalog.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseProgressionCatalog.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseProgressionCatalog.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/LoggingMigrator.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LoggingMigrator.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LoggingMigrator.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/LoggingMigrator.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/MesocycleModels.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleModels.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleModels.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleModels.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/Exercise/CatalogDiagnosticsView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CatalogDiagnosticsView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CatalogDiagnosticsView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CatalogDiagnosticsView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/Exercise/Exercise.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Exercise.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Exercise.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Exercise.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/Exercise/ExerciseCatalog.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseCatalog.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseCatalog.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseCatalog.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/Exercise/ExerciseNote.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseNote.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseNote.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseNote.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/Exercise/ExerciseStore.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseStore.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseStore.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseStore.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/Models.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Models.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Models.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Models.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/SessionField.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionField.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionField.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionField.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Models/SessionSummary.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionSummary.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionSummary.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionSummary.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/ProgressionRulesTests.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionRulesTests.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionRulesTests.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionRulesTests.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/ProgressionStoreV2.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionStoreV2.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionStoreV2.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionStoreV2.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/RepHistoryStore.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/RepHistoryStore.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/RepHistoryStore.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/RepHistoryStore.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Services/PRStore.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PRStore.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PRStore.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PRStore.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Services/SummaryBuilder.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SummaryBuilder.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SummaryBuilder.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SummaryBuilder.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/EngineTests.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/EngineTests.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/EngineTests.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/EngineTests.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/ExerciseListView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseListView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseListView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseListView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/Haptics.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Haptics.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Haptics.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/Haptics.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/MesoCycleRules.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoCycleRules.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoCycleRules.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoCycleRules.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/MesoProgress.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoProgress.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoProgress.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoProgress.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/MesocycleProgressionEngine.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleProgressionEngine.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleProgressionEngine.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleProgressionEngine.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/PrefillAndProgressionTests.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrefillAndProgressionTests.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrefillAndProgressionTests.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrefillAndProgressionTests.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/PrefillPolicy.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrefillPolicy.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrefillPolicy.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/PrefillPolicy.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/ProgressionPolicy.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionPolicy.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionPolicy.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionPolicy.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/ProgressionStore.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionStore.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionStore.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionStore.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/SchedulePrefs.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SchedulePrefs.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SchedulePrefs.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SchedulePrefs.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/SessionHeaderView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionHeaderView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionHeaderView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionHeaderView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/SetListView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SetListView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SetListView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SetListView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Utils/StoreMigrationTests.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/StoreMigrationTests.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/StoreMigrationTests.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/StoreMigrationTests.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Chat/ChatHostOverlay.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatHostOverlay.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatHostOverlay.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatHostOverlay.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Chat/ChatLauncherButton.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatLauncherButton.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatLauncherButton.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatLauncherButton.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Chat/ChatWindowView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatWindowView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatWindowView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ChatWindowView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Components/CheckChip.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CheckChip.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CheckChip.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CheckChip.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Components/ExerciseSectionHeader.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseSectionHeader.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseSectionHeader.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseSectionHeader.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Exercises/AddExerciseView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AddExerciseView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AddExerciseView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AddExerciseView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Exercises/ExerciseView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Mesocycles/CreateNewMeso.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CreateNewMeso.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CreateNewMeso.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/CreateNewMeso.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Mesocycles/MesoCompletionCongratsView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoCompletionCongratsView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoCompletionCongratsView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoCompletionCongratsView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Mesocycles/MesoScratchBuilderView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoScratchBuilderView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoScratchBuilderView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoScratchBuilderView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Mesocycles/MesocycleRowView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleRowView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleRowView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocycleRowView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Mesocycles/MesocyclesView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocyclesView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocyclesView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesocyclesView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/More/MoreView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MoreView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MoreView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MoreView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Schedule/GlobalScheduleDayButtonLabel.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalScheduleDayButtonLabel.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalScheduleDayButtonLabel.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalScheduleDayButtonLabel.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Schedule/GlobalSchedulePopover.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalSchedulePopover.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalSchedulePopover.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalSchedulePopover.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Schedule/GlobalScheduleWeekRow.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalScheduleWeekRow.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalScheduleWeekRow.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GlobalScheduleWeekRow.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Schedule/WeekDayHeader.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WeekDayHeader.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WeekDayHeader.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WeekDayHeader.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Schedule/WeekDayRibbon.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WeekDayRibbon.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WeekDayRibbon.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WeekDayRibbon.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Settings/AppSettingsView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AppSettingsView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AppSettingsView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AppSettingsView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Settings/AppearanceView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AppearanceView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AppearanceView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/AppearanceView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Summary/SessionSummaryView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionSummaryView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionSummaryView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SessionSummaryView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/Train/TrainView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/TrainView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/TrainView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/TrainView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/ExerciseHistoryView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseHistoryView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseHistoryView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseHistoryView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/ExerciseSetsSection.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseSetsSection.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseSetsSection.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ExerciseSetsSection.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/InlineSetRow.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/InlineSetRow.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/InlineSetRow.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/InlineSetRow.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/MesoExerciseLog 2.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoExerciseLog 2.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoExerciseLog 2.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoExerciseLog 2.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/MesoExerciseLog.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoExerciseLog.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoExerciseLog.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/MesoExerciseLog.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/ProgressionCatalog.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionCatalog.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionCatalog.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionCatalog.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/ProgressionRulesGenerator.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionRulesGenerator.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionRulesGenerator.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/ProgressionRulesGenerator.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/RestTimerView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/RestTimerView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/RestTimerView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/RestTimerView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/SetEntryView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SetEntryView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SetEntryView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SetEntryView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/SettingsView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/SettingsView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/TimerPresetSheet.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/TimerPresetSheet.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/TimerPresetSheet.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/TimerPresetSheet.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/WorkoutLogEntry.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WorkoutLogEntry.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WorkoutLogEntry.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WorkoutLogEntry.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/LiftOS/Views/WorkoutSessionView/WorkoutSessionView.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WorkoutSessionView.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WorkoutSessionView.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/WorkoutSessionView.o"
+  },
+  "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/garrett.curtis/Developer/LiftOS/LiftOS/build/LiftOS.build/Release-iphoneos/LiftOS.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

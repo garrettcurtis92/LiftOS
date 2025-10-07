@@ -7,25 +7,39 @@
 import SwiftUI
 
 struct ChatHostOverlay: View {
-    @State private var showChat = false
+    @StateObject private var controller = ChatController.shared
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        ZStack {
-            Spacer() // Placeholder for layout
+        ZStack(alignment: .bottomTrailing) {
+            // 1) Floating orb (always available when mode == .orb)
+            if controller.mode == .orb {
+                ChatLauncherButton(isPresented: .constant(false)) // keep API but not used
+                    .environmentObject(controller)
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 28)
+                    .transition(.scale.combined(with: .opacity))
+            }
 
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    ChatLauncherButton(isPresented: $showChat)
-                        .padding(.bottom, 30)
-                        .padding(.trailing, 20)
-                }
+            // 2) Siri-style dock
+            if controller.mode == .docked {
+                ChatDock()
+                    .environmentObject(controller)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 10)
+            }
+
+            // 3) Expanded panel (uses your existing ChatWindowView)
+            if controller.mode == .expanded {
+                ChatWindowView()
+                    .environmentObject(controller)
+                    .transition(.opacity)
             }
         }
-        .sheet(isPresented: $showChat) {
-            ChatWindowView()
-        }
+        .animation(.snappy, value: controller.mode)
+        .accessibilityElement(children: .contain)
     }
 }
 
