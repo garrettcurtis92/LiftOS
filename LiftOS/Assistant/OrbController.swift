@@ -47,6 +47,9 @@ final class OrbController: ObservableObject {
 
     // Sheet state
     @Published var isPresentingSheet: Bool = false
+    
+    // Temporary dismiss (resets on app restart)
+    @Published var isDismissedTemporarily: Bool = false
 
     init() {
         // restore global position
@@ -93,7 +96,7 @@ final class OrbController: ObservableObject {
     }
 
     func shouldShow(for tab: String) -> Bool {
-        guard !isHidden else { return false }
+        guard !isHidden && !isDismissedTemporarily else { return false }
         switch scope {
         case .global, .perTab: return true
         case .trainOnly: return tab == "train"

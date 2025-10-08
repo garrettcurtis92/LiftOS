@@ -38,6 +38,10 @@ struct AssistantOrb: View {
                     .animation(.snappy(duration: 0.2), value: orb.position(for: tabKey))
                     .accessibilityLabel("Assistant")
                     .accessibilityHint("Double tap to open assistant")
+            } else if orb.isDismissedTemporarily && !orb.isHidden {
+                // Show a small tab on the right edge
+                showAssistantButton
+                    .position(x: proxy.size.width - 18, y: proxy.size.height / 2)
             }
         }
         .allowsHitTesting(true) // hit only when shown
@@ -80,6 +84,32 @@ struct AssistantOrb: View {
         .frame(width: baseSize, height: baseSize)
         .scaleEffect(isPressed ? 0.96 : 1.0)
         .onAppear { isBreathing = true }
+    }
+    
+    private var showAssistantButton: some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            withAnimation(.snappy(duration: 0.25)) {
+                orb.isDismissedTemporarily = false
+            }
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("AI")
+                    .font(.system(size: 9, weight: .medium))
+                    .tracking(0.5)
+            }
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .shadow(color: .black.opacity(0.08), radius: 4, x: -2, y: 0)
+        }
+        .buttonStyle(.plain)
+        .transition(.move(edge: .trailing).combined(with: .opacity))
+        .accessibilityLabel("Show Assistant")
+        .accessibilityHint("Tap to show the AI assistant orb")
     }
 
     // MARK: Gestures
@@ -129,10 +159,13 @@ struct AssistantOrb: View {
                 }
                 .pickerStyle(.inline)
             }
-
-            Button(role: .destructive) {
-                orb.isHidden = true
-            } label: { Label("Hide on App", systemImage: "eye.slash") }
+            
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                withAnimation(.snappy(duration: 0.25)) {
+                    orb.isDismissedTemporarily = true
+                }
+            } label: { Label("Dismiss", systemImage: "eye.slash") }
         }
     }
 

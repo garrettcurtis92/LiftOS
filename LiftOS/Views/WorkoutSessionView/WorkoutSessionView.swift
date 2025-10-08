@@ -6,6 +6,15 @@
 import SwiftUI
 import SwiftData
 
+enum ReplacementScope {
+    case session      // Just this session
+    case mesocycle    // Rest of mesocycle
+}
+
+enum MoveDirection {
+    case up, down
+}
+
 struct WorkoutSessionView: View {
     // Input
     var dayLabel: String? = nil
@@ -49,6 +58,11 @@ struct WorkoutSessionView: View {
     @State private var sessionFinishTrigger = 0
     @State private var sessionErrorTrigger = 0
     @State private var restTimerEndTrigger = 0
+    
+    // Exercise options menu state
+    @State private var selectedExerciseForOptions: ExerciseItem?
+    @State private var showingReplaceSheet = false
+    @State private var replacementScope: ReplacementScope = .session
     //
 
     init(
@@ -399,6 +413,17 @@ struct WorkoutSessionView: View {
                 }
             )
         }
+        .sheet(isPresented: $showingReplaceSheet) {
+            if let exercise = selectedExerciseForOptions {
+                ReplaceExerciseSheet(
+                    originalExercise: exercise,
+                    allExercises: ExerciseProgressionCatalog.shared.allRules(),
+                    onReplace: { newExerciseName, scope in
+                        handleReplaceExercise(original: exercise, replacement: newExerciseName, scope: scope)
+                    }
+                )
+            }
+        }
         .onChange(of: restTimerEnabled) { oldValue, newValue in
             if !newValue {
                 showRestTimer = false
@@ -430,6 +455,12 @@ struct WorkoutSessionView: View {
             onSkipSet: { ex, idx in handleSkipSet(for: ex, index: idx) },
             onDeleteSet: { ex, idx in handleDeleteSet(for: ex, index: idx) },
             onCommitInline: { ex, idx, w, r, checked in handleCommitInline(for: ex, index: idx, weight: w, reps: r, checked: checked) },
+            onMoveExercise: { index, direction in moveExercise(from: index, direction: direction) },
+            onReplaceExercise: { ex in
+                selectedExerciseForOptions = ex
+                showingReplaceSheet = true
+            },
+            onSkipExercise: { ex in skipAllSets(for: ex) },
             hapticsEnabled: hapticsEnabled
         )
     }
@@ -916,6 +947,118 @@ struct WorkoutSessionView: View {
         }
         return WorkoutSession(title: title, exercises: ex)
     }
+    
+    // MARK: - Exercise Options Helpers
+    
+    private func moveExercise(from index: Int, direction: MoveDirection) {
+        let targetIndex = direction == .up ? index - 1 : index + 1
+        guard targetIndex >= 0 && targetIndex < session.exercises.count else { return }
+        
+        withAnimation(.snappy(duration: 0.3)) {
+            session.exercises.swapAt(index, targetIndex)
+        }
+    }
+    
+    private func skipAllSets(for exercise: ExerciseItem) {
+        // Mark all sets as skipped (done but with nil weight/reps)
+        var skippedSets: [ExerciseSet] = []
+        for setIndex in 1...exercise.targetSets {
+            skippedSets.append(ExerciseSet(index: setIndex, weight: nil, reps: nil, rir: nil, done: true))
+        }
+        completed[exercise.id] = skippedSets
+        
+        // Log skipped sets if in mesocycle
+        if let mesoID = mesocycleID {
+            let key = PlanKey.normalize(exercise.name)
+            for setIndex in 1...exercise.targetSets {
+                upsertSetLog(
+                    mesocycleID: mesoID,
+                    week: currentWeek,
+                    dayIx: currentDayIx,
+                    exerciseDisplayName: exercise.name,
+                    exerciseKey: key,
+                    setIndex: setIndex,
+                    weight: nil,
+                    reps: nil,
+                    done: true,
+                    unit: weightUnit
+                )
+            }
+        }
+    }
+    
+    private func handleReplaceExercise(original: ExerciseItem, replacement: String, scope: ReplacementScope) {
+        switch scope {
+        case .session:
+            replaceExerciseForSession(original: original, replacement: replacement)
+        case .mesocycle:
+            replaceExerciseForMesocycle(original: original, replacement: replacement)
+        }
+    }
+    
+    private func replaceExerciseForSession(original: ExerciseItem, replacement: String) {
+        // Find the exercise in the session and replace it
+        guard let index = session.exercises.firstIndex(where: { $0.id == original.id }) else { return }
+        
+        // Create new exercise item with replacement name but keep same targetSets and rirTarget
+        let replacementExercise = ExerciseItem(
+            name: replacement,
+            targetSets: original.targetSets,
+            rirTarget: original.rirTarget,
+            typeLabel: determineTypeLabel(for: replacement)
+        )
+        
+        withAnimation(.snappy(duration: 0.3)) {
+            session.exercises[index] = replacementExercise
+        }
+        
+        // Clear any existing sets for the original exercise
+        completed[original.id] = nil
+    }
+    
+    private func replaceExerciseForMesocycle(original: ExerciseItem, replacement: String) {
+        guard let mesoID = mesocycleID, let meso = activeMesocycle else {
+            // Fall back to session-only replacement
+            replaceExerciseForSession(original: original, replacement: replacement)
+            return
+        }
+        
+        // Update the mesocycle plan snapshot
+        let originalKey = PlanKey.normalize(original.name)
+        let replacementKey = PlanKey.normalize(replacement)
+        
+        if var snapshot = meso.planSnapshot {
+            // Update the plan for all days
+            for dayIndex in snapshot.indices {
+                for exIndex in snapshot[dayIndex].exercises.indices {
+                    if snapshot[dayIndex].exercises[exIndex].normalizedKey == originalKey {
+                        // Replace the exercise
+                        snapshot[dayIndex].exercises[exIndex].exerciseDisplayName = replacement
+                        snapshot[dayIndex].exercises[exIndex].normalizedKey = replacementKey
+                    }
+                }
+            }
+            // Save updated snapshot back to mesocycle
+            meso.planSnapshot = snapshot
+        }
+        
+        // Save the mesocycle changes
+        try? modelContext.save()
+        
+        // Update current session
+        replaceExerciseForSession(original: original, replacement: replacement)
+        
+        // Rebuild session to pick up new exercise
+        rebuildSessionForCurrentPosition()
+    }
+    
+    private func determineTypeLabel(for exerciseName: String) -> String? {
+        // Check catalog for type
+        if let rule = ExerciseProgressionCatalog.shared.rule(for: exerciseName) {
+            return rule.equipType.rawValue.capitalized
+        }
+        return nil
+    }
 }
 
 struct WorkoutBackground: View {
@@ -954,6 +1097,9 @@ struct SessionTabView: View {
     let onSkipSet: (ExerciseItem, Int) -> Void
     let onDeleteSet: (ExerciseItem, Int) -> Void
     let onCommitInline: (ExerciseItem, Int, Double?, Int?, Bool) -> Void
+    let onMoveExercise: (Int, MoveDirection) -> Void
+    let onReplaceExercise: (ExerciseItem) -> Void
+    let onSkipExercise: (ExerciseItem) -> Void
     let hapticsEnabled: Bool
     
     @FocusState private var focusedField: SessionField?
@@ -1037,6 +1183,57 @@ struct SessionTabView: View {
                         // Exercise type pill
                         if let typeLabel = session.exercises[exerciseIndex].typeLabel {
                             DSPill(text: typeLabel)
+                        }
+                        
+                        // Options menu button
+                        Menu {
+                            let exercise = session.exercises[exerciseIndex]
+                            
+                            // Move Up
+                            if exerciseIndex > 0 {
+                                Button {
+                                    Haptics.tap()
+                                    onMoveExercise(exerciseIndex, .up)
+                                } label: {
+                                    Label("Move Up", systemImage: "arrow.up")
+                                }
+                            }
+                            
+                            // Move Down
+                            if exerciseIndex < session.exercises.count - 1 {
+                                Button {
+                                    Haptics.tap()
+                                    onMoveExercise(exerciseIndex, .down)
+                                } label: {
+                                    Label("Move Down", systemImage: "arrow.down")
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            // Replace Exercise
+                            Button {
+                                Haptics.tap()
+                                onReplaceExercise(exercise)
+                            } label: {
+                                Label("Replace Exercise", systemImage: "arrow.triangle.2.circlepath")
+                            }
+                            
+                            Divider()
+                            
+                            // Skip Sets
+                            Button {
+                                Haptics.tap()
+                                onSkipExercise(exercise)
+                            } label: {
+                                Label("Skip Sets", systemImage: "forward.fill")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 32, height: 32)
+                                .contentShape(Rectangle())
                         }
                     }
                     .padding(.horizontal, DS.Metrics.cardInset)
